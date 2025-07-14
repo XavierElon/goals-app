@@ -42,6 +42,7 @@ model Todo {
   title       String
   description String?
   isCompleted Boolean  @default(false)
+  completedAt DateTime?
   priority    String   @default("medium") // "low", "medium", "high"
   dueDate     DateTime?
   createdAt   DateTime @default(now())

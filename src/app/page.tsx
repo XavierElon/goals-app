@@ -34,6 +34,7 @@ interface Todo {
   title: string
   description?: string
   isCompleted: boolean
+  completedAt?: string
   priority: string
   dueDate?: string
   createdAt: string
@@ -944,6 +945,9 @@ export default function Home() {
                             Status
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Completed Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
@@ -982,6 +986,11 @@ export default function Home() {
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                               </button>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-500">
+                                {todo.completedAt ? formatDueDate(todo.completedAt) : '-'}
+                              </div>
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex space-x-2">

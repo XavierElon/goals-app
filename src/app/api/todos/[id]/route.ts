@@ -15,7 +15,8 @@ export async function PUT(
       const todo = await prisma.todo.update({
         where: { id: todoId },
         data: {
-          isCompleted: isCompleted
+          isCompleted: isCompleted,
+          completedAt: isCompleted ? new Date() : null
         }
       })
       return NextResponse.json(todo)
