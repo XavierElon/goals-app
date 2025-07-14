@@ -1,6 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface Goal {
   id: string
@@ -25,6 +39,34 @@ interface Todo {
   createdAt: string
 }
 
+function SortableRow({ id, children, ...props }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    background: isDragging ? '#f3f4f6' : undefined
+  };
+  return (
+    <tr 
+      ref={setNodeRef} 
+      style={style} 
+      {...attributes} 
+      {...listeners}
+      className={`${props.className || ''} cursor-grab active:cursor-grabbing`}
+    >
+      {children}
+    </tr>
+  );
+}
+
 export default function Home() {
   const [goals, setGoals] = useState<Goal[]>([])
   const [todos, setTodos] = useState<Todo[]>([])
@@ -37,6 +79,8 @@ export default function Home() {
   const [showTodoEditModal, setShowTodoEditModal] = useState(false)
   const [deletingGoal, setDeletingGoal] = useState<string | null>(null)
   const [deletingTodo, setDeletingTodo] = useState<string | null>(null)
+  const [showCompletedTodos, setShowCompletedTodos] = useState(false);
+  const [showCompletedGoals, setShowCompletedGoals] = useState(false);
 
   useEffect(() => {
     fetchGoals()
@@ -209,6 +253,7 @@ export default function Home() {
   }
 
   const toggleTodoCompletion = async (todoId: string, isCompleted: boolean) => {
+    console.log('toggleTodoCompletion called with:', { todoId, isCompleted });
     try {
       const response = await fetch(`/api/todos/${todoId}`, {
         method: 'PUT',
@@ -218,8 +263,12 @@ export default function Home() {
         body: JSON.stringify({ isCompleted: !isCompleted }),
       })
 
+      console.log('API response status:', response.status);
       if (response.ok) {
+        console.log('Todo completion toggled successfully');
         fetchTodos()
+      } else {
+        console.error('API error:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error toggling todo completion:', error)
@@ -341,6 +390,60 @@ export default function Home() {
   const dailyGoals = goals.filter(goal => goal.goalType === 'daily')
   const oneTimeGoals = goals.filter(goal => goal.goalType === 'one-time')
   const todosArray = Array.isArray(todos) ? todos : []
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
+
+  // Split todos/goals
+  const activeTodos = todosArray.filter(t => !t.isCompleted);
+  const completedTodos = todosArray.filter(t => t.isCompleted);
+  const activeGoals = goals.filter(g => !g.isCompleted);
+  const completedGoals = goals.filter(g => g.isCompleted);
+
+  // DnD order state
+  const [todoOrder, setTodoOrder] = useState(activeTodos.map(t => t.id));
+  const [goalOrder, setGoalOrder] = useState(activeGoals.map(g => g.id));
+
+  useEffect(() => {
+    setTodoOrder(activeTodos.map(t => t.id));
+  }, [todos]);
+  useEffect(() => {
+    setGoalOrder(activeGoals.map(g => g.id));
+  }, [goals]);
+
+  // DnD handlers
+  const handleTodoDragEnd = async (event) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      const oldIndex = todoOrder.indexOf(active.id);
+      const newIndex = todoOrder.indexOf(over.id);
+      const newOrder = arrayMove(todoOrder, oldIndex, newIndex);
+      setTodoOrder(newOrder);
+      await fetch('/api/todos/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ todoIds: newOrder }),
+      });
+      fetchTodos();
+    }
+  };
+  const handleGoalDragEnd = async (event) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      const oldIndex = goalOrder.indexOf(active.id);
+      const newIndex = goalOrder.indexOf(over.id);
+      const newOrder = arrayMove(goalOrder, oldIndex, newIndex);
+      setGoalOrder(newOrder);
+      await fetch('/api/goals/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ goalIds: newOrder }),
+      });
+      fetchGoals();
+    }
+  };
 
   if (loading) {
     return (
@@ -695,6 +798,9 @@ export default function Home() {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
+                      <span className="sr-only">Drag</span>
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Task
                     </th>
@@ -713,79 +819,193 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {todosArray.map((todo) => (
-                    <tr key={todo.id} className={`hover:bg-gray-50 ${
-                      todo.isCompleted ? 'bg-gray-50' : ''
-                    }`}>
-                      <td className="px-6 py-4">
-                        <div>
-                          <div className={`text-sm font-medium ${
-                            todo.isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'
-                          }`}>
-                            {todo.title}
-                          </div>
-                          {todo.description && (
-                            <div className={`text-sm ${
-                              todo.isCompleted ? 'text-gray-400' : 'text-gray-500'
-                            }`}>
-                              {todo.description}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
-                          {getPriorityText(todo.priority)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
-                          {todo.dueDate ? (
-                            <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-600 font-medium' : ''}>
-                              {formatDueDate(todo.dueDate)}
-                              {isOverdue(todo.dueDate, todo.isCompleted) && ' (Overdue)'}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">No due date</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => toggleTodoCompletion(todo.id, todo.isCompleted)}
-                          className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${
-                            todo.isCompleted
-                              ? 'bg-green-500 border-green-500 text-white'
-                              : 'border-gray-300 hover:border-green-400'
-                          }`}
-                        >
-                          {todo.isCompleted && (
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => openTodoEditModal(todo)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => setDeletingTodo(todo.id)}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTodoDragEnd}>
+                    <SortableContext items={todoOrder} strategy={verticalListSortingStrategy}>
+                      {todoOrder.map(id => {
+                        const todo = activeTodos.find(t => t.id === id);
+                        if (!todo) return null;
+                        return (
+                          <SortableRow key={todo.id} id={todo.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center justify-center">
+                                <svg className="w-5 h-5 text-gray-400 cursor-grab active:cursor-grabbing" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M7 2a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 2zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 8zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 14zm6-8a2 2 0 1 1-.001-4.001A2 2 0 0 1 13 6zm0 2a2 2 0 1 1 .001 4.001A2 2 0 0 1 13 8zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 13 14z"/>
+                                </svg>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div>
+                                <div className={`text-sm font-medium ${
+                                  todo.isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'
+                                }`}>
+                                  {todo.title}
+                                </div>
+                                {todo.description && (
+                                  <div className={`text-sm ${
+                                    todo.isCompleted ? 'text-gray-400' : 'text-gray-500'
+                                  }`}>
+                                    {todo.description}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
+                                {getPriorityText(todo.priority)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-900">
+                                {todo.dueDate ? (
+                                  <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-600 font-medium' : ''}>
+                                    {formatDueDate(todo.dueDate)}
+                                    {isOverdue(todo.dueDate, todo.isCompleted) && ' (Overdue)'}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400">No due date</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <button
+                                onClick={() => {
+                                  console.log('Completion button clicked for todo:', todo.id, 'current status:', todo.isCompleted);
+                                  toggleTodoCompletion(todo.id, todo.isCompleted);
+                                }}
+                                className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                  todo.isCompleted
+                                    ? 'bg-green-500 border-green-500 text-white'
+                                    : 'border-gray-300 hover:border-green-400'
+                                }`}
+                              >
+                                {todo.isCompleted && (
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                )}
+                              </button>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => openTodoEditModal(todo)}
+                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => setDeletingTodo(todo.id)}
+                                  className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </SortableRow>
+                        );
+                      })}
+                    </SortableContext>
+                  </DndContext>
                 </tbody>
               </table>
+              
+              {/* Completed Todos Section */}
+              {completedTodos.length > 0 && (
+                <div className="mt-6">
+                  <button
+                    onClick={() => setShowCompletedTodos(!showCompletedTodos)}
+                    className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-800 mb-4"
+                  >
+                    <svg
+                      className={`w-4 h-4 transition-transform ${showCompletedTodos ? 'rotate-90' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                    <span>{showCompletedTodos ? 'Hide' : 'Show'} Completed Tasks ({completedTodos.length})</span>
+                  </button>
+                  
+                  {showCompletedTodos && (
+                    <table className="w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Task
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Priority
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Due Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {completedTodos.map((todo) => (
+                          <tr key={todo.id} className="bg-gray-50">
+                            <td className="px-6 py-4">
+                              <div>
+                                <div className="text-sm font-medium text-gray-500 line-through">
+                                  {todo.title}
+                                </div>
+                                {todo.description && (
+                                  <div className="text-sm text-gray-400">
+                                    {todo.description}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
+                                {getPriorityText(todo.priority)}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-sm text-gray-500">
+                                {todo.dueDate ? formatDueDate(todo.dueDate) : 'No due date'}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <button
+                                onClick={() => toggleTodoCompletion(todo.id, todo.isCompleted)}
+                                className="w-8 h-8 rounded-full border-2 flex items-center justify-center bg-green-500 border-green-500 text-white"
+                              >
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => openTodoEditModal(todo)}
+                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => setDeletingTodo(todo.id)}
+                                  className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

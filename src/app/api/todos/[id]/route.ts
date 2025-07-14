@@ -7,11 +7,24 @@ export async function PUT(
 ) {
   try {
     const { id: todoId } = await params
-    const { title, description, priority, dueDate, isCompleted } = await request.json()
+    const body = await request.json()
+    const { title, description, priority, dueDate, isCompleted } = body
 
+    // If we're only updating completion status, don't require title
+    if (Object.keys(body).length === 1 && body.hasOwnProperty('isCompleted')) {
+      const todo = await prisma.todo.update({
+        where: { id: todoId },
+        data: {
+          isCompleted: isCompleted
+        }
+      })
+      return NextResponse.json(todo)
+    }
+
+    // For full updates, require title
     if (!title) {
       return NextResponse.json(
-        { error: 'Title is required' },
+        { error: 'Title is required for full updates' },
         { status: 400 }
       )
     }
