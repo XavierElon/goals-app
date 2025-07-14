@@ -1,0 +1,17 @@
+[Unit]
+Description=Goals App Next.js Application
+After=network.target
+
+[Service]
+Type=simple
+User=xxx
+WorkingDirectory=/home/xxx/Documents/goals-app
+Environment=NODE_ENV=production
+Environment=PORT=10820
+ExecStartPre=/usr/bin/npm run build
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target 
