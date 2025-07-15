@@ -28,7 +28,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, description, goalType } = await request.json()
+    const { title, description, goalType, status } = await request.json()
 
     if (!title) {
       return NextResponse.json(
@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         description,
-        goalType: goalType || 'daily'
+        goalType: goalType || 'daily',
+        status: status || 'in-progress'
       }
     })
 

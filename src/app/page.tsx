@@ -25,6 +25,7 @@ interface Goal {
   description?: string
   goalType: string
   isCompleted: boolean
+  status: string
   createdAt: string
   completions: Array<{
     id: string
@@ -68,7 +69,7 @@ function SortableRow({ id, children, className }: { id: string; children: React.
 export default function Home() {
   const [goals, setGoals] = useState<Goal[]>([])
   const [todos, setTodos] = useState<Todo[]>([])
-  const [newGoal, setNewGoal] = useState({ title: '', description: '', goalType: 'daily' })
+  const [newGoal, setNewGoal] = useState({ title: '', description: '', goalType: 'daily', status: 'in-progress' })
   const [newTodo, setNewTodo] = useState({ title: '', description: '', priority: 'medium', dueDate: '' })
   const [loading, setLoading] = useState(true)
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
@@ -78,6 +79,7 @@ export default function Home() {
   const [deletingGoal, setDeletingGoal] = useState<string | null>(null)
   const [deletingTodo, setDeletingTodo] = useState<string | null>(null)
   const [showCompletedTodos, setShowCompletedTodos] = useState(false)
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState<string | null>(null)
 
   // DnD Kit setup
   const sensors = useSensors(
@@ -108,6 +110,19 @@ export default function Home() {
     fetchGoals()
     fetchTodos()
   }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (statusDropdownOpen && !(event.target as Element).closest('.status-dropdown')) {
+        setStatusDropdownOpen(null)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [statusDropdownOpen])
 
   const fetchGoals = async () => {
     try {
@@ -145,11 +160,16 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newGoal),
+        body: JSON.stringify({
+          title: newGoal.title,
+          description: newGoal.description,
+          goalType: newGoal.goalType,
+          status: newGoal.goalType === 'one-time' ? newGoal.status : 'in-progress'
+        }),
       })
 
       if (response.ok) {
-        setNewGoal({ title: '', description: '', goalType: 'daily' })
+        setNewGoal({ title: '', description: '', goalType: 'daily', status: 'in-progress' })
         fetchGoals()
       }
     } catch (error) {
@@ -192,7 +212,8 @@ export default function Home() {
         body: JSON.stringify({
           title: editingGoal.title,
           description: editingGoal.description,
-          goalType: editingGoal.goalType
+          goalType: editingGoal.goalType,
+          status: editingGoal.status
         }),
       })
 
@@ -338,6 +359,25 @@ export default function Home() {
     }
   }
 
+  const updateGoalStatus = async (goalId: string, status: string) => {
+    try {
+      const response = await fetch(`/api/goals/${goalId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      })
+
+      if (response.ok) {
+        setStatusDropdownOpen(null)
+        fetchGoals()
+      }
+    } catch (error) {
+      console.error('Error updating goal status:', error)
+    }
+  }
+
   const getStreakCount = (completions: Array<{ date: string }>) => {
     if (completions.length === 0) return 0
     
@@ -386,6 +426,40 @@ export default function Home() {
 
   const getPriorityText = (priority: string) => {
     return priority.charAt(0).toUpperCase() + priority.slice(1)
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'not-started':
+        return 'bg-gray-100 text-gray-800'
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800'
+      case 'completed':
+        return 'bg-green-100 text-green-800'
+      case 'on-hold':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'cancelled':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'not-started':
+        return 'Not Started'
+      case 'in-progress':
+        return 'In Progress'
+      case 'completed':
+        return 'Completed'
+      case 'on-hold':
+        return 'On Hold'
+      case 'cancelled':
+        return 'Cancelled'
+      default:
+        return 'In Progress'
+    }
   }
 
   const formatDueDate = (dueDate: string) => {
@@ -454,20 +528,39 @@ export default function Home() {
                 rows={3}
               />
             </div>
-            <div>
-              <label htmlFor="goalType" className="block text-sm font-medium text-gray-700 mb-1">
-                Goal Type *
-              </label>
-              <select
-                id="goalType"
-                value={newGoal.goalType}
-                onChange={(e) => setNewGoal({ ...newGoal, goalType: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="daily">Daily Goal (track daily progress)</option>
-                <option value="one-time">One-time Goal (achieve once)</option>
-              </select>
-            </div>
+                            <div>
+                  <label htmlFor="goalType" className="block text-sm font-medium text-gray-700 mb-1">
+                    Goal Type *
+                  </label>
+                  <select
+                    id="goalType"
+                    value={newGoal.goalType}
+                    onChange={(e) => setNewGoal({ ...newGoal, goalType: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="daily">Daily Goal (track daily progress)</option>
+                    <option value="one-time">One-time Goal (achieve once)</option>
+                  </select>
+                </div>
+                {newGoal.goalType === 'one-time' && (
+                  <div>
+                    <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
+                    <select
+                      id="status"
+                      value={newGoal.status}
+                      onChange={(e) => setNewGoal({ ...newGoal, status: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="not-started">Not Started</option>
+                      <option value="in-progress">In Progress</option>
+                      <option value="on-hold">On Hold</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                )}
             <button
               type="submit"
               className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
@@ -632,13 +725,37 @@ export default function Home() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          goal.isCompleted
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {goal.isCompleted ? 'Completed' : 'In Progress'}
-                        </span>
+                        <div className="relative status-dropdown">
+                          <button
+                            onClick={() => setStatusDropdownOpen(statusDropdownOpen === goal.id ? null : goal.id)}
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${getStatusColor(goal.status)}`}
+                          >
+                            {getStatusText(goal.status)}
+                            <svg className="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                          
+                          {statusDropdownOpen === goal.id && (
+                            <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 status-dropdown">
+                              <div className="py-1">
+                                {['not-started', 'in-progress', 'on-hold', 'completed', 'cancelled'].map((status) => (
+                                  <button
+                                    key={status}
+                                    onClick={() => updateGoalStatus(goal.id, status)}
+                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
+                                      goal.status === status ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                                    }`}
+                                  >
+                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getStatusColor(status)}`}>
+                                      {getStatusText(status)}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <button
@@ -1023,6 +1140,25 @@ export default function Home() {
                     <option value="one-time">One-time Goal (achieve once)</option>
                   </select>
                 </div>
+                {editingGoal.goalType === 'one-time' && (
+                  <div>
+                    <label htmlFor="edit-status" className="block text-sm font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
+                    <select
+                      id="edit-status"
+                      value={editingGoal.status || 'in-progress'}
+                      onChange={(e) => setEditingGoal({ ...editingGoal, status: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="not-started">Not Started</option>
+                      <option value="in-progress">In Progress</option>
+                      <option value="on-hold">On Hold</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                )}
                 <div className="flex space-x-3">
                   <button
                     type="submit"
