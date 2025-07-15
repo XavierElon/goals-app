@@ -38,6 +38,7 @@ export default function Home() {
   const [showTodoEditModal, setShowTodoEditModal] = useState(false)
   const [deletingGoal, setDeletingGoal] = useState<string | null>(null)
   const [deletingTodo, setDeletingTodo] = useState<string | null>(null)
+  const [showCompletedTodos, setShowCompletedTodos] = useState(false)
 
   useEffect(() => {
     fetchGoals()
@@ -334,6 +335,18 @@ export default function Home() {
     })
   }
 
+  const formatCompletionDate = (completedAt: string) => {
+    if (!completedAt) return null
+    const date = new Date(completedAt)
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
   const isOverdue = (dueDate: string, isCompleted: boolean) => {
     if (!dueDate || isCompleted) return false
     return new Date(dueDate) < new Date()
@@ -342,6 +355,8 @@ export default function Home() {
   const dailyGoals = goals.filter(goal => goal.goalType === 'daily')
   const oneTimeGoals = goals.filter(goal => goal.goalType === 'one-time')
   const todosArray = Array.isArray(todos) ? todos : []
+  const activeTodos = todosArray.filter(todo => !todo.isCompleted)
+  const completedTodos = todosArray.filter(todo => todo.isCompleted)
 
   if (loading) {
     return (
@@ -686,108 +701,216 @@ export default function Home() {
             </form>
           </div>
 
-          {/* Todos List */}
-          {todosArray.length === 0 ? (
+          {/* Active Todos List */}
+          {activeTodos.length === 0 && completedTodos.length === 0 ? (
             <div className="p-6 text-center text-gray-500">
               No tasks yet. Add your first task above!
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Task
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Priority
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Due Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {todosArray.map((todo) => (
-                    <tr key={todo.id} className={`hover:bg-gray-50 ${
-                      todo.isCompleted ? 'bg-gray-50' : ''
-                    }`}>
-                      <td className="px-6 py-4">
-                        <div>
-                          <div className={`text-sm font-medium ${
-                            todo.isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'
-                          }`}>
-                            {todo.title}
-                          </div>
-                          {todo.description && (
-                            <div className={`text-sm ${
-                              todo.isCompleted ? 'text-gray-400' : 'text-gray-500'
-                            }`}>
-                              {todo.description}
+            <>
+              {/* Active Todos */}
+              {activeTodos.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Task
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Priority
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Due Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {activeTodos.map((todo) => (
+                        <tr key={todo.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {todo.title}
+                              </div>
+                              {todo.description && (
+                                <div className="text-sm text-gray-500">
+                                  {todo.description}
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
-                          {getPriorityText(todo.priority)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">
-                          {todo.dueDate ? (
-                            <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-600 font-medium' : ''}>
-                              {formatDueDate(todo.dueDate)}
-                              {isOverdue(todo.dueDate, todo.isCompleted) && ' (Overdue)'}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
+                              {getPriorityText(todo.priority)}
                             </span>
-                          ) : (
-                            <span className="text-gray-400">No due date</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => toggleTodoCompletion(todo.id, todo.isCompleted)}
-                          className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${
-                            todo.isCompleted
-                              ? 'bg-green-500 border-green-500 text-white'
-                              : 'border-gray-300 hover:border-green-400'
-                          }`}
-                        >
-                          {todo.isCompleted && (
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => openTodoEditModal(todo)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => setDeletingTodo(todo.id)}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-900">
+                              {todo.dueDate ? (
+                                <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-600 font-medium' : ''}>
+                                  {formatDueDate(todo.dueDate)}
+                                  {isOverdue(todo.dueDate, todo.isCompleted) && ' (Overdue)'}
+                                </span>
+                              ) : (
+                                <span className="text-gray-400">No due date</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={() => toggleTodoCompletion(todo.id, todo.isCompleted)}
+                              className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-green-400 flex items-center justify-center transition-colors"
+                            >
+                            </button>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => openTodoEditModal(todo)}
+                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => setDeletingTodo(todo.id)}
+                                className="text-red-600 hover:text-red-800 text-sm font-medium"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Completed Todos Section */}
+              {completedTodos.length > 0 && (
+                <div className="border-t border-gray-200">
+                  <button
+                    onClick={() => setShowCompletedTodos(!showCompletedTodos)}
+                    className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-gray-700">
+                        Completed Tasks ({completedTodos.length})
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        Click to {showCompletedTodos ? 'hide' : 'show'}
+                      </span>
+                    </div>
+                    <svg
+                      className={`w-5 h-5 text-gray-500 transition-transform ${
+                        showCompletedTodos ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {showCompletedTodos && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Task
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Priority
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Due Date
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Completed
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {completedTodos.map((todo) => (
+                            <tr key={todo.id} className="bg-gray-50 hover:bg-gray-100">
+                              <td className="px-6 py-4">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-500 line-through">
+                                    {todo.title}
+                                  </div>
+                                  {todo.description && (
+                                    <div className="text-sm text-gray-400 line-through">
+                                      {todo.description}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
+                                  {getPriorityText(todo.priority)}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="text-sm text-gray-500">
+                                  {todo.dueDate ? (
+                                    <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-500' : ''}>
+                                      {formatDueDate(todo.dueDate)}
+                                      {isOverdue(todo.dueDate, todo.isCompleted) && ' (Was Overdue)'}
+                                    </span>
+                                  ) : (
+                                    <span className="text-gray-400">No due date</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center space-x-2">
+                                  <div className="w-8 h-8 rounded-full bg-green-500 border-green-500 text-white flex items-center justify-center">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    {todo.completedAt ? formatCompletionDate(todo.completedAt) : 'Unknown'}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex space-x-2">
+                                  <button
+                                    onClick={() => toggleTodoCompletion(todo.id, todo.isCompleted)}
+                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                  >
+                                    Reopen
+                                  </button>
+                                  <button
+                                    onClick={() => setDeletingTodo(todo.id)}
+                                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
 
