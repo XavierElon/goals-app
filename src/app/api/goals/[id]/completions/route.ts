@@ -3,11 +3,11 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { date } = await request.json()
-    const goalId = params.id
+    const { id: goalId } = await params
 
     // Check if goal exists
     const goal = await prisma.goal.findUnique({
@@ -32,8 +32,8 @@ export async function POST(
     })
 
     return NextResponse.json(completion, { status: 201 })
-  } catch (error: any) {
-    if (error.code === 'P2002') {
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
       return NextResponse.json(
         { error: 'Completion already exists for this date' },
         { status: 409 }
@@ -50,11 +50,11 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { date } = await request.json()
-    const goalId = params.id
+    const { id: goalId } = await params
 
     const completionDate = date ? new Date(date) : new Date()
     
