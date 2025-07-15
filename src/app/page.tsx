@@ -1,197 +1,27 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from '@dnd-kit/core'
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import {
-  useSortable,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-
-interface Goal {
-  id: string
-  title: string
-  description?: string
-  goalType: string
-  isCompleted: boolean
-  createdAt: string
-  completions: Array<{
-    id: string
-    date: string
-  }>
-}
-
-interface Todo {
-  id: string
-  title: string
-  description?: string
-  isCompleted: boolean
-  completedAt?: string
-  priority: string
-  dueDate?: string
-  createdAt: string
-}
-
-// Sortable Todo Item Component
-function SortableTodoItem({ 
-  todo, 
-  onToggleCompletion, 
-  onEdit, 
-  onDelete, 
-  onDropdownClick, 
-  openDropdown, 
-  getPriorityColor, 
-  getPriorityText, 
-  formatDueDate, 
-  isOverdue 
-}: {
-  todo: Todo
-  onToggleCompletion: (id: string, isCompleted: boolean) => void
-  onEdit: (todo: Todo) => void
-  onDelete: (id: string) => void
-  onDropdownClick: (id: string) => void
-  openDropdown: string | null
-  getPriorityColor: (priority: string) => string
-  getPriorityText: (priority: string) => string
-  formatDueDate: (dueDate: string) => string | null
-  isOverdue: (dueDate: string, isCompleted: boolean) => boolean
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: todo.id })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  }
-
-  return (
-    <tr 
-      ref={setNodeRef} 
-      style={style} 
-      className="hover:bg-gray-50"
-    >
-      <td className="px-6 py-4">
-        <div className="flex items-center space-x-3">
-          <div 
-            {...attributes} 
-            {...listeners}
-            className="flex-shrink-0 cursor-move p-1 hover:bg-gray-100 rounded"
-          >
-            <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-            </svg>
-          </div>
-          <div className="flex-1">
-            <div className="text-sm font-medium text-gray-900">
-              {todo.title}
-            </div>
-            {todo.description && (
-              <div className="text-sm text-gray-500">
-                {todo.description}
-              </div>
-            )}
-          </div>
-        </div>
-      </td>
-      <td className="px-6 py-4">
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
-          {getPriorityText(todo.priority)}
-        </span>
-      </td>
-      <td className="px-6 py-4">
-        <div className="text-sm text-gray-900">
-          {todo.dueDate ? (
-            <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-600 font-medium' : ''}>
-              {formatDueDate(todo.dueDate)}
-              {isOverdue(todo.dueDate, todo.isCompleted) && ' (Overdue)'}
-            </span>
-          ) : (
-            <span className="text-gray-400">No due date</span>
-          )}
-        </div>
-      </td>
-      <td className="px-6 py-4">
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onToggleCompletion(todo.id, todo.isCompleted)
-          }}
-          className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-green-400 flex items-center justify-center transition-colors"
-        >
-        </button>
-      </td>
-      <td className="px-6 py-4">
-        <div className="relative dropdown-container">
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              onDropdownClick(todo.id)
-            }}
-            className="text-gray-400 hover:text-gray-600 focus:outline-none"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-            </svg>
-          </button>
-          
-          {openDropdown === todo.id && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-              <div className="py-1">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onEdit(todo)
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onDelete(todo.id)
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </td>
-    </tr>
-  )
-}
+import { 
+  GoalForm, 
+  TodoSection,
+  GoalSection,
+  EditGoalModal,
+  EditTodoModal,
+  DeleteConfirmationModal,
+  Goal, 
+  Todo,
+  getPriorityColor,
+  getPriorityText,
+  formatDueDate,
+  formatCompletionDate,
+  isOverdue,
+  getStreakCount,
+  isCompletedToday
+} from '../components'
 
 export default function Home() {
   const [goals, setGoals] = useState<Goal[]>([])
   const [todos, setTodos] = useState<Todo[]>([])
-  const [newGoal, setNewGoal] = useState({ title: '', description: '', goalType: 'daily' })
-  const [newTodo, setNewTodo] = useState({ title: '', description: '', priority: 'medium', dueDate: '' })
   const [loading, setLoading] = useState(true)
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
@@ -199,29 +29,7 @@ export default function Home() {
   const [showTodoEditModal, setShowTodoEditModal] = useState(false)
   const [deletingGoal, setDeletingGoal] = useState<string | null>(null)
   const [deletingTodo, setDeletingTodo] = useState<string | null>(null)
-  const [showCompletedTodos, setShowCompletedTodos] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-
-  // Drag and drop sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-
-    if (active.id !== over?.id) {
-      setTodos((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id)
-        const newIndex = items.findIndex((item) => item.id === over?.id)
-
-        return arrayMove(items, oldIndex, newIndex)
-      })
-    }
-  }
 
   useEffect(() => {
     fetchGoals()
@@ -267,21 +75,17 @@ export default function Home() {
     }
   }
 
-  const addGoal = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newGoal.title.trim()) return
-
+  const addGoal = async (goalData: { title: string; description: string; goalType: string }) => {
     try {
       const response = await fetch('/api/goals', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newGoal),
+        body: JSON.stringify(goalData),
       })
 
       if (response.ok) {
-        setNewGoal({ title: '', description: '', goalType: 'daily' })
         fetchGoals()
       }
     } catch (error) {
@@ -289,21 +93,17 @@ export default function Home() {
     }
   }
 
-  const addTodo = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newTodo.title.trim()) return
-
+  const addTodo = async (todoData: { title: string; description: string; priority: string; dueDate: string }) => {
     try {
       const response = await fetch('/api/todos', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newTodo),
+        body: JSON.stringify(todoData),
       })
 
       if (response.ok) {
-        setNewTodo({ title: '', description: '', priority: 'medium', dueDate: '' })
         fetchTodos()
       }
     } catch (error) {
@@ -478,89 +278,12 @@ export default function Home() {
     }
   }
 
-  const getStreakCount = (completions: Array<{ date: string }>) => {
-    if (completions.length === 0) return 0
-    
-    const sortedCompletions = completions
-      .map(c => new Date(c.date))
-      .sort((a, b) => b.getTime() - a.getTime())
-    
-    let streak = 0
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    
-    for (let i = 0; i < sortedCompletions.length; i++) {
-      const completionDate = new Date(sortedCompletions[i])
-      completionDate.setHours(0, 0, 0, 0)
-      
-      const expectedDate = new Date(today)
-      expectedDate.setDate(today.getDate() - i)
-      
-      if (completionDate.getTime() === expectedDate.getTime()) {
-        streak++
-      } else {
-        break
-      }
-    }
-    
-    return streak
-  }
-
-  const isCompletedToday = (completions: Array<{ date: string }>) => {
-    const today = new Date().toISOString().split('T')[0]
-    return completions.some(c => c.date.startsWith(today))
-  }
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800'
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'low':
-        return 'bg-green-100 text-green-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const getPriorityText = (priority: string) => {
-    return priority.charAt(0).toUpperCase() + priority.slice(1)
-  }
-
-  const formatDueDate = (dueDate: string) => {
-    if (!dueDate) return null
-    // Parse the date and format it consistently
-    const date = new Date(dueDate)
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
-  const formatCompletionDate = (completedAt: string) => {
-    if (!completedAt) return null
-    const date = new Date(completedAt)
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
-  const isOverdue = (dueDate: string, isCompleted: boolean) => {
-    if (!dueDate || isCompleted) return false
-    return new Date(dueDate) < new Date()
+  const handleTodoReorder = (newTodos: Todo[]) => {
+    setTodos(newTodos)
   }
 
   const dailyGoals = goals.filter(goal => goal.goalType === 'daily')
   const oneTimeGoals = goals.filter(goal => goal.goalType === 'one-time')
-  const todosArray = Array.isArray(todos) ? todos : []
-  const activeTodos = todosArray.filter(todo => !todo.isCompleted)
-  const completedTodos = todosArray.filter(todo => todo.isCompleted)
 
   if (loading) {
     return (
@@ -578,786 +301,87 @@ export default function Home() {
         </h1>
 
         {/* Add Goal Form */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Add New Goal</h2>
-          <form onSubmit={addGoal} className="space-y-4">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                Goal Title *
-              </label>
-              <input
-                type="text"
-                id="title"
-                value={newGoal.title}
-                onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your goal..."
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Description (optional)
-              </label>
-              <textarea
-                id="description"
-                value={newGoal.description}
-                onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Add a description..."
-                rows={3}
-              />
-            </div>
-            <div>
-              <label htmlFor="goalType" className="block text-sm font-medium text-gray-700 mb-1">
-                Goal Type *
-              </label>
-              <select
-                id="goalType"
-                value={newGoal.goalType}
-                onChange={(e) => setNewGoal({ ...newGoal, goalType: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="daily">Daily Goal (track daily progress)</option>
-                <option value="one-time">One-time Goal (achieve once)</option>
-              </select>
-            </div>
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Add Goal
-            </button>
-          </form>
-        </div>
+        <GoalForm onSubmit={addGoal} />
 
         {/* Daily Goals Section */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">Daily Goals</h2>
-            <p className="text-sm text-gray-500 mt-1">Track your daily habits and routines</p>
-          </div>
-          {dailyGoals.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              No daily goals yet. Add your first daily goal above!
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Goal
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Streak
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Today
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total Completions
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {dailyGoals.map((goal) => {
-                    const streak = getStreakCount(goal.completions)
-                    const completedToday = isCompletedToday(goal.completions)
-                    
-                    return (
-                      <tr key={goal.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {goal.title}
-                            </div>
-                            {goal.description && (
-                              <div className="text-sm text-gray-500">
-                                {goal.description}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              streak > 0 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {streak} day{streak !== 1 ? 's' : ''}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <button
-                            onClick={() => toggleCompletion(goal.id, new Date().toISOString())}
-                            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${
-                              completedToday
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : 'border-gray-300 hover:border-green-400'
-                            }`}
-                          >
-                            {completedToday && (
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </button>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
-                          {goal.completions.length}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="relative dropdown-container">
-                            <button
-                              onClick={() => handleDropdownClick(goal.id)}
-                              className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                            >
-                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                              </svg>
-                            </button>
-                            
-                            {openDropdown === goal.id && (
-                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-                                <div className="py-1">
-                                  <button
-                                    onClick={() => {
-                                      openEditModal(goal)
-                                      closeDropdown()
-                                    }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setDeletingGoal(goal.id)
-                                      closeDropdown()
-                                    }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <GoalSection
+          title="Daily Goals"
+          description="Track your daily habits and routines"
+          goals={dailyGoals}
+          onToggleCompletion={toggleCompletion}
+          onToggleOneTimeGoal={toggleOneTimeGoal}
+          onEdit={openEditModal}
+          onDelete={setDeletingGoal}
+          onDropdownClick={handleDropdownClick}
+          openDropdown={openDropdown}
+          goalType="daily"
+        />
 
         {/* One-time Goals Section */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">One-time Goals</h2>
-            <p className="text-sm text-gray-500 mt-1">Achieve these goals once and mark them complete</p>
-          </div>
-          {oneTimeGoals.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              No one-time goals yet. Add your first one-time goal above!
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Goal
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Action
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {oneTimeGoals.map((goal) => (
-                    <tr key={goal.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div>
-                          <div className={`text-sm font-medium ${
-                            goal.isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'
-                          }`}>
-                            {goal.title}
-                          </div>
-                          {goal.description && (
-                            <div className={`text-sm ${
-                              goal.isCompleted ? 'text-gray-400' : 'text-gray-500'
-                            }`}>
-                              {goal.description}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          goal.isCompleted
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {goal.isCompleted ? 'Completed' : 'In Progress'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => toggleOneTimeGoal(goal.id)}
-                          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                            goal.isCompleted
-                              ? 'bg-red-600 text-white hover:bg-red-700'
-                              : 'bg-green-600 text-white hover:bg-green-700'
-                          }`}
-                        >
-                          {goal.isCompleted ? 'Mark Incomplete' : 'Mark Complete'}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="relative dropdown-container">
-                          <button
-                            onClick={() => handleDropdownClick(goal.id)}
-                            className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                          >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                            </svg>
-                          </button>
-                          
-                          {openDropdown === goal.id && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-                              <div className="py-1">
-                                <button
-                                  onClick={() => {
-                                    openEditModal(goal)
-                                    closeDropdown()
-                                  }}
-                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setDeletingGoal(goal.id)
-                                    closeDropdown()
-                                  }}
-                                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <GoalSection
+          title="One-time Goals"
+          description="Achieve these goals once and mark them complete"
+          goals={oneTimeGoals}
+          onToggleCompletion={toggleCompletion}
+          onToggleOneTimeGoal={toggleOneTimeGoal}
+          onEdit={openEditModal}
+          onDelete={setDeletingGoal}
+          onDropdownClick={handleDropdownClick}
+          openDropdown={openDropdown}
+          goalType="one-time"
+        />
 
         {/* To-Do List Section */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">To-Do List</h2>
-            <p className="text-sm text-gray-500 mt-1">Manage your tasks and daily activities. Drag tasks to reorder them by priority.</p>
-          </div>
-          
-          {/* Add Todo Form */}
-          <div className="p-6 border-b border-gray-200">
-            <form onSubmit={addTodo} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-2">
-                  <label htmlFor="todo-title" className="block text-sm font-medium text-gray-700 mb-1">
-                    Task Title *
-                  </label>
-                  <input
-                    type="text"
-                    id="todo-title"
-                    value={newTodo.title}
-                    onChange={(e) => setNewTodo({ ...newTodo, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter your task..."
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="todo-priority" className="block text-sm font-medium text-gray-700 mb-1">
-                    Priority
-                  </label>
-                  <select
-                    id="todo-priority"
-                    value={newTodo.priority}
-                    onChange={(e) => setNewTodo({ ...newTodo, priority: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="todo-dueDate" className="block text-sm font-medium text-gray-700 mb-1">
-                    Due Date
-                  </label>
-                  <input
-                    type="date"
-                    id="todo-dueDate"
-                    value={newTodo.dueDate}
-                    onChange={(e) => setNewTodo({ ...newTodo, dueDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="todo-description" className="block text-sm font-medium text-gray-700 mb-1">
-                  Description (optional)
-                </label>
-                <textarea
-                  id="todo-description"
-                  value={newTodo.description}
-                  onChange={(e) => setNewTodo({ ...newTodo, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Add details about this task..."
-                  rows={2}
-                />
-              </div>
-              <button
-                type="submit"
-                className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors"
-              >
-                Add Task
-              </button>
-            </form>
-          </div>
-
-          {/* Active Todos List */}
-          {activeTodos.length === 0 && completedTodos.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              No tasks yet. Add your first task above!
-            </div>
-          ) : (
-            <>
-              {/* Active Todos */}
-              {activeTodos.length > 0 && (
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext
-                    items={activeTodos.map(todo => todo.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              <div className="flex items-center space-x-2">
-                                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-                                </svg>
-                                <span>Task</span>
-                              </div>
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Priority
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Due Date
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Status
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {activeTodos.map((todo) => (
-                            <SortableTodoItem
-                              key={todo.id}
-                              todo={todo}
-                              onToggleCompletion={toggleTodoCompletion}
-                              onEdit={openTodoEditModal}
-                              onDelete={setDeletingTodo}
-                              onDropdownClick={handleDropdownClick}
-                              openDropdown={openDropdown}
-                              getPriorityColor={getPriorityColor}
-                              getPriorityText={getPriorityText}
-                              formatDueDate={formatDueDate}
-                              isOverdue={isOverdue}
-                            />
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </SortableContext>
-                </DndContext>
-              )}
-
-              {/* Completed Todos Section */}
-              {completedTodos.length > 0 && (
-                <div className="border-t border-gray-200">
-                  <button
-                    onClick={() => setShowCompletedTodos(!showCompletedTodos)}
-                    className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-gray-700">
-                        Completed Tasks ({completedTodos.length})
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        Click to {showCompletedTodos ? 'hide' : 'show'}
-                      </span>
-                    </div>
-                    <svg
-                      className={`w-5 h-5 text-gray-500 transition-transform ${
-                        showCompletedTodos ? 'rotate-180' : ''
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  
-                  {showCompletedTodos && (
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Task
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Priority
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Due Date
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Completed
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {completedTodos.map((todo) => (
-                            <tr key={todo.id} className="bg-gray-50 hover:bg-gray-100">
-                              <td className="px-6 py-4">
-                                <div>
-                                  <div className="text-sm font-medium text-gray-500 line-through">
-                                    {todo.title}
-                                  </div>
-                                  {todo.description && (
-                                    <div className="text-sm text-gray-400 line-through">
-                                      {todo.description}
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
-                                  {getPriorityText(todo.priority)}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="text-sm text-gray-500">
-                                  {todo.dueDate ? (
-                                    <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-500' : ''}>
-                                      {formatDueDate(todo.dueDate)}
-                                      {isOverdue(todo.dueDate, todo.isCompleted) && ' (Was Overdue)'}
-                                    </span>
-                                  ) : (
-                                    <span className="text-gray-400">No due date</span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="flex items-center space-x-2">
-                                  <div className="w-8 h-8 rounded-full bg-green-500 border-green-500 text-white flex items-center justify-center">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                  </div>
-                                  <div className="text-sm text-gray-600">
-                                    {todo.completedAt ? formatCompletionDate(todo.completedAt) : 'Unknown'}
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="relative dropdown-container">
-                                  <button
-                                    onClick={() => handleDropdownClick(todo.id)}
-                                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                                  >
-                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                                    </svg>
-                                  </button>
-                                  
-                                  {openDropdown === todo.id && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-                                      <div className="py-1">
-                                        <button
-                                          onClick={() => {
-                                            toggleTodoCompletion(todo.id, todo.isCompleted)
-                                            closeDropdown()
-                                          }}
-                                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                        >
-                                          Reopen
-                                        </button>
-                                        <button
-                                          onClick={() => {
-                                            setDeletingTodo(todo.id)
-                                            closeDropdown()
-                                          }}
-                                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                        >
-                                          Delete
-                                        </button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        <TodoSection
+          todos={todos}
+          onAddTodo={addTodo}
+          onToggleCompletion={toggleTodoCompletion}
+          onEdit={openTodoEditModal}
+          onDelete={setDeletingTodo}
+          onDropdownClick={handleDropdownClick}
+          openDropdown={openDropdown}
+          onReorder={handleTodoReorder}
+        />
 
         {/* Edit Goal Modal */}
-        {showEditModal && editingGoal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-              <h3 className="text-lg font-semibold mb-4">Edit Goal</h3>
-              <form onSubmit={editGoal} className="space-y-4">
-                <div>
-                  <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700 mb-1">
-                    Goal Title *
-                  </label>
-                  <input
-                    type="text"
-                    id="edit-title"
-                    value={editingGoal.title}
-                    onChange={(e) => setEditingGoal({ ...editingGoal, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 mb-1">
-                    Description (optional)
-                  </label>
-                  <textarea
-                    id="edit-description"
-                    value={editingGoal.description || ''}
-                    onChange={(e) => setEditingGoal({ ...editingGoal, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="edit-goalType" className="block text-sm font-medium text-gray-700 mb-1">
-                    Goal Type *
-                  </label>
-                  <select
-                    id="edit-goalType"
-                    value={editingGoal.goalType}
-                    onChange={(e) => setEditingGoal({ ...editingGoal, goalType: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="daily">Daily Goal (track daily progress)</option>
-                    <option value="one-time">One-time Goal (achieve once)</option>
-                  </select>
-                </div>
-                <div className="flex space-x-3">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    Save Changes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowEditModal(false)
-                      setEditingGoal(null)
-                    }}
-                    className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+        <EditGoalModal
+          goal={editingGoal}
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false)
+            setEditingGoal(null)
+          }}
+          onSubmit={editGoal}
+        />
 
         {/* Edit Todo Modal */}
-        {showTodoEditModal && editingTodo && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-              <h3 className="text-lg font-semibold mb-4">Edit Task</h3>
-              <form onSubmit={editTodo} className="space-y-4">
-                <div>
-                  <label htmlFor="edit-todo-title" className="block text-sm font-medium text-gray-700 mb-1">
-                    Task Title *
-                  </label>
-                  <input
-                    type="text"
-                    id="edit-todo-title"
-                    value={editingTodo.title}
-                    onChange={(e) => setEditingTodo({ ...editingTodo, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="edit-todo-description" className="block text-sm font-medium text-gray-700 mb-1">
-                    Description (optional)
-                  </label>
-                  <textarea
-                    id="edit-todo-description"
-                    value={editingTodo.description || ''}
-                    onChange={(e) => setEditingTodo({ ...editingTodo, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="edit-todo-priority" className="block text-sm font-medium text-gray-700 mb-1">
-                      Priority
-                    </label>
-                    <select
-                      id="edit-todo-priority"
-                      value={editingTodo.priority}
-                      onChange={(e) => setEditingTodo({ ...editingTodo, priority: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="edit-todo-dueDate" className="block text-sm font-medium text-gray-700 mb-1">
-                      Due Date
-                    </label>
-                    <input
-                      type="date"
-                      id="edit-todo-dueDate"
-                      value={editingTodo.dueDate || ''}
-                      onChange={(e) => setEditingTodo({ ...editingTodo, dueDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-                <div className="flex space-x-3">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    Save Changes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowTodoEditModal(false)
-                      setEditingTodo(null)
-                    }}
-                    className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+        <EditTodoModal
+          todo={editingTodo}
+          isOpen={showTodoEditModal}
+          onClose={() => {
+            setShowTodoEditModal(false)
+            setEditingTodo(null)
+          }}
+          onSubmit={editTodo}
+        />
 
         {/* Delete Goal Confirmation Modal */}
-        {deletingGoal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-              <h3 className="text-lg font-semibold mb-4">Delete Goal</h3>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this goal? This action cannot be undone.
-              </p>
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => deleteGoal(deletingGoal)}
-                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
-                >
-                  Delete
-                </button>
-                <button
-                  onClick={() => setDeletingGoal(null)}
-                  className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <DeleteConfirmationModal
+          isOpen={!!deletingGoal}
+          title="Delete Goal"
+          message="Are you sure you want to delete this goal? This action cannot be undone."
+          onConfirm={() => deleteGoal(deletingGoal!)}
+          onCancel={() => setDeletingGoal(null)}
+        />
 
         {/* Delete Todo Confirmation Modal */}
-        {deletingTodo && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-              <h3 className="text-lg font-semibold mb-4">Delete Task</h3>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this task? This action cannot be undone.
-              </p>
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => deleteTodo(deletingTodo)}
-                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
-                >
-                  Delete
-                </button>
-                <button
-                  onClick={() => setDeletingTodo(null)}
-                  className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <DeleteConfirmationModal
+          isOpen={!!deletingTodo}
+          title="Delete Task"
+          message="Are you sure you want to delete this task? This action cannot be undone."
+          onConfirm={() => deleteTodo(deletingTodo!)}
+          onCancel={() => setDeletingTodo(null)}
+        />
       </div>
     </div>
   )
