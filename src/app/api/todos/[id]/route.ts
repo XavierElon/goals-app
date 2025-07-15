@@ -25,7 +25,7 @@ export async function PUT(
     // For full updates, require title
     if (!title) {
       return NextResponse.json(
-        { error: 'Title is required for full updates' },
+        { error: 'Title is required' },
         { status: 400 }
       )
     }
