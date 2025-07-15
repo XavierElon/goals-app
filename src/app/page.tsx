@@ -1,6 +1,25 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import {
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface Goal {
   id: string
@@ -26,6 +45,148 @@ interface Todo {
   createdAt: string
 }
 
+// Sortable Todo Item Component
+function SortableTodoItem({ 
+  todo, 
+  onToggleCompletion, 
+  onEdit, 
+  onDelete, 
+  onDropdownClick, 
+  openDropdown, 
+  getPriorityColor, 
+  getPriorityText, 
+  formatDueDate, 
+  isOverdue 
+}: {
+  todo: Todo
+  onToggleCompletion: (id: string, isCompleted: boolean) => void
+  onEdit: (todo: Todo) => void
+  onDelete: (id: string) => void
+  onDropdownClick: (id: string) => void
+  openDropdown: string | null
+  getPriorityColor: (priority: string) => string
+  getPriorityText: (priority: string) => string
+  formatDueDate: (dueDate: string) => string | null
+  isOverdue: (dueDate: string, isCompleted: boolean) => boolean
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: todo.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <tr 
+      ref={setNodeRef} 
+      style={style} 
+      className="hover:bg-gray-50"
+    >
+      <td className="px-6 py-4">
+        <div className="flex items-center space-x-3">
+          <div 
+            {...attributes} 
+            {...listeners}
+            className="flex-shrink-0 cursor-move p-1 hover:bg-gray-100 rounded"
+          >
+            <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <div className="text-sm font-medium text-gray-900">
+              {todo.title}
+            </div>
+            {todo.description && (
+              <div className="text-sm text-gray-500">
+                {todo.description}
+              </div>
+            )}
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4">
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
+          {getPriorityText(todo.priority)}
+        </span>
+      </td>
+      <td className="px-6 py-4">
+        <div className="text-sm text-gray-900">
+          {todo.dueDate ? (
+            <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-600 font-medium' : ''}>
+              {formatDueDate(todo.dueDate)}
+              {isOverdue(todo.dueDate, todo.isCompleted) && ' (Overdue)'}
+            </span>
+          ) : (
+            <span className="text-gray-400">No due date</span>
+          )}
+        </div>
+      </td>
+      <td className="px-6 py-4">
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onToggleCompletion(todo.id, todo.isCompleted)
+          }}
+          className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-green-400 flex items-center justify-center transition-colors"
+        >
+        </button>
+      </td>
+      <td className="px-6 py-4">
+        <div className="relative dropdown-container">
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onDropdownClick(todo.id)
+            }}
+            className="text-gray-400 hover:text-gray-600 focus:outline-none"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+            </svg>
+          </button>
+          
+          {openDropdown === todo.id && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+              <div className="py-1">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onEdit(todo)
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onDelete(todo.id)
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </td>
+    </tr>
+  )
+}
+
 export default function Home() {
   const [goals, setGoals] = useState<Goal[]>([])
   const [todos, setTodos] = useState<Todo[]>([])
@@ -39,11 +200,46 @@ export default function Home() {
   const [deletingGoal, setDeletingGoal] = useState<string | null>(null)
   const [deletingTodo, setDeletingTodo] = useState<string | null>(null)
   const [showCompletedTodos, setShowCompletedTodos] = useState(false)
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (active.id !== over?.id) {
+      setTodos((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over?.id)
+
+        return arrayMove(items, oldIndex, newIndex)
+      })
+    }
+  }
 
   useEffect(() => {
     fetchGoals()
     fetchTodos()
   }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openDropdown && !(event.target as Element).closest('.dropdown-container')) {
+        setOpenDropdown(null)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [openDropdown])
 
   const fetchGoals = async () => {
     try {
@@ -208,6 +404,14 @@ export default function Home() {
   const openTodoEditModal = (todo: Todo) => {
     setEditingTodo({ ...todo })
     setShowTodoEditModal(true)
+  }
+
+  const handleDropdownClick = (id: string) => {
+    setOpenDropdown(openDropdown === id ? null : id)
+  }
+
+  const closeDropdown = () => {
+    setOpenDropdown(null)
   }
 
   const toggleTodoCompletion = async (todoId: string, isCompleted: boolean) => {
@@ -509,19 +713,40 @@ export default function Home() {
                           {goal.completions.length}
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex space-x-2">
+                          <div className="relative dropdown-container">
                             <button
-                              onClick={() => openEditModal(goal)}
-                              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                              onClick={() => handleDropdownClick(goal.id)}
+                              className="text-gray-400 hover:text-gray-600 focus:outline-none"
                             >
-                              Edit
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                              </svg>
                             </button>
-                            <button
-                              onClick={() => setDeletingGoal(goal.id)}
-                              className="text-red-600 hover:text-red-800 text-sm font-medium"
-                            >
-                              Delete
-                            </button>
+                            
+                            {openDropdown === goal.id && (
+                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                                <div className="py-1">
+                                  <button
+                                    onClick={() => {
+                                      openEditModal(goal)
+                                      closeDropdown()
+                                    }}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setDeletingGoal(goal.id)
+                                      closeDropdown()
+                                    }}
+                                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -603,19 +828,40 @@ export default function Home() {
                         </button>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex space-x-2">
+                        <div className="relative dropdown-container">
                           <button
-                            onClick={() => openEditModal(goal)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            onClick={() => handleDropdownClick(goal.id)}
+                            className="text-gray-400 hover:text-gray-600 focus:outline-none"
                           >
-                            Edit
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                            </svg>
                           </button>
-                          <button
-                            onClick={() => setDeletingGoal(goal.id)}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
-                          >
-                            Delete
-                          </button>
+                          
+                          {openDropdown === goal.id && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                              <div className="py-1">
+                                <button
+                                  onClick={() => {
+                                    openEditModal(goal)
+                                    closeDropdown()
+                                  }}
+                                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setDeletingGoal(goal.id)
+                                    closeDropdown()
+                                  }}
+                                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -630,7 +876,7 @@ export default function Home() {
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold">To-Do List</h2>
-            <p className="text-sm text-gray-500 mt-1">Manage your tasks and daily activities</p>
+            <p className="text-sm text-gray-500 mt-1">Manage your tasks and daily activities. Drag tasks to reorder them by priority.</p>
           </div>
           
           {/* Add Todo Form */}
@@ -710,87 +956,62 @@ export default function Home() {
             <>
               {/* Active Todos */}
               {activeTodos.length > 0 && (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Task
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Priority
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Due Date
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {activeTodos.map((todo) => (
-                        <tr key={todo.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {todo.title}
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={activeTodos.map(todo => todo.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <div className="flex items-center space-x-2">
+                                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+                                </svg>
+                                <span>Task</span>
                               </div>
-                              {todo.description && (
-                                <div className="text-sm text-gray-500">
-                                  {todo.description}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
-                              {getPriorityText(todo.priority)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900">
-                              {todo.dueDate ? (
-                                <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-600 font-medium' : ''}>
-                                  {formatDueDate(todo.dueDate)}
-                                  {isOverdue(todo.dueDate, todo.isCompleted) && ' (Overdue)'}
-                                </span>
-                              ) : (
-                                <span className="text-gray-400">No due date</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <button
-                              onClick={() => toggleTodoCompletion(todo.id, todo.isCompleted)}
-                              className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-green-400 flex items-center justify-center transition-colors"
-                            >
-                            </button>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => openTodoEditModal(todo)}
-                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => setDeletingTodo(todo.id)}
-                                className="text-red-600 hover:text-red-800 text-sm font-medium"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Priority
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Due Date
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {activeTodos.map((todo) => (
+                            <SortableTodoItem
+                              key={todo.id}
+                              todo={todo}
+                              onToggleCompletion={toggleTodoCompletion}
+                              onEdit={openTodoEditModal}
+                              onDelete={setDeletingTodo}
+                              onDropdownClick={handleDropdownClick}
+                              openDropdown={openDropdown}
+                              getPriorityColor={getPriorityColor}
+                              getPriorityText={getPriorityText}
+                              formatDueDate={formatDueDate}
+                              isOverdue={isOverdue}
+                            />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </SortableContext>
+                </DndContext>
               )}
 
               {/* Completed Todos Section */}
@@ -887,19 +1108,40 @@ export default function Home() {
                                 </div>
                               </td>
                               <td className="px-6 py-4">
-                                <div className="flex space-x-2">
+                                <div className="relative dropdown-container">
                                   <button
-                                    onClick={() => toggleTodoCompletion(todo.id, todo.isCompleted)}
-                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    onClick={() => handleDropdownClick(todo.id)}
+                                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
                                   >
-                                    Reopen
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                    </svg>
                                   </button>
-                                  <button
-                                    onClick={() => setDeletingTodo(todo.id)}
-                                    className="text-red-600 hover:text-red-800 text-sm font-medium"
-                                  >
-                                    Delete
-                                  </button>
+                                  
+                                  {openDropdown === todo.id && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                                      <div className="py-1">
+                                        <button
+                                          onClick={() => {
+                                            toggleTodoCompletion(todo.id, todo.isCompleted)
+                                            closeDropdown()
+                                          }}
+                                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        >
+                                          Reopen
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            setDeletingTodo(todo.id)
+                                            closeDropdown()
+                                          }}
+                                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </td>
                             </tr>
