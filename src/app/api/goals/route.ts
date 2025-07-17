@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Goal } from '@prisma/client'
 
 export async function GET() {
   try {
@@ -11,9 +12,10 @@ export async function GET() {
           }
         }
       },
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: [
+        { goalType: 'asc' },
+        { order: 'asc' }
+      ]
     })
 
     return NextResponse.json(goals)

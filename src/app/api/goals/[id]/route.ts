@@ -7,10 +7,10 @@ export async function PUT(
 ) {
   try {
     const { id: goalId } = await params
-    const { title, description, goalType, status } = await request.json()
+    const { title, description, goalType, status, order } = await request.json()
 
     // If this is a status update, we don't need title validation
-    if (!title && !status) {
+    if (!title && !status && order === undefined) {
       return NextResponse.json(
         { error: 'Title is required' },
         { status: 400 }
@@ -22,12 +22,14 @@ export async function PUT(
       description?: string | null
       goalType?: string
       status?: string
+      order?: number
     } = {}
     
     if (title) updateData.title = title
     if (description !== undefined) updateData.description = description
     if (goalType) updateData.goalType = goalType
     if (status) updateData.status = status
+    if (order !== undefined) updateData.order = order
 
     const goal = await prisma.goal.update({
       where: { id: goalId },

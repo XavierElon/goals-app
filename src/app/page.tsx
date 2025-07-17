@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -80,6 +80,8 @@ export default function Home() {
   const [deletingTodo, setDeletingTodo] = useState<string | null>(null)
   const [showCompletedTodos, setShowCompletedTodos] = useState(false)
   const [statusDropdownOpen, setStatusDropdownOpen] = useState<string | null>(null)
+  const [goalOrder, setGoalOrder] = useState<string[]>([])
+  const [oneTimeGoalOrder, setOneTimeGoalOrder] = useState<string[]>([])
 
   // DnD Kit setup
   const sensors = useSensors(
@@ -106,10 +108,61 @@ export default function Home() {
     }
   }
 
+  const handleDailyGoalDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (active.id !== over?.id) {
+      setGoals((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over?.id)
+        const reorderedItems = arrayMove(items, oldIndex, newIndex)
+        
+        // Update order for all goals in the new order
+        reorderedItems.forEach((goal, index) => {
+          if (goal.goalType === 'daily') {
+            updateGoalOrder(goal.id, index)
+          }
+        })
+        
+        return reorderedItems
+      })
+    }
+  }
+
+  const handleOneTimeGoalDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (active.id !== over?.id) {
+      setGoals((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over?.id)
+        const reorderedItems = arrayMove(items, oldIndex, newIndex)
+        
+        // Update order for all goals in the new order
+        reorderedItems.forEach((goal, index) => {
+          if (goal.goalType === 'one-time') {
+            updateGoalOrder(goal.id, index)
+          }
+        })
+        
+        return reorderedItems
+      })
+    }
+  }
+
   useEffect(() => {
     fetchGoals()
     fetchTodos()
   }, [])
+
+  const dailyGoals = useMemo(() => goals.filter(goal => goal.goalType === 'daily'), [goals])
+  const oneTimeGoals = useMemo(() => goals.filter(goal => goal.goalType === 'one-time'), [goals])
+  const todosArray = Array.isArray(todos) ? todos : []
+
+  useEffect(() => {
+    setGoalOrder(dailyGoals.map(goal => goal.id))
+    setOneTimeGoalOrder(oneTimeGoals.map(goal => goal.id))
+  }, [dailyGoals, oneTimeGoals])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -378,6 +431,24 @@ export default function Home() {
     }
   }
 
+  const updateGoalOrder = async (goalId: string, order: number) => {
+    try {
+      const response = await fetch(`/api/goals/${goalId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ order }),
+      })
+
+      if (!response.ok) {
+        console.error('Error updating goal order')
+      }
+    } catch (error) {
+      console.error('Error updating goal order:', error)
+    }
+  }
+
   const getStreakCount = (completions: Array<{ date: string }>) => {
     if (completions.length === 0) return 0
     
@@ -477,10 +548,6 @@ export default function Home() {
     if (!dueDate || isCompleted) return false
     return new Date(dueDate) < new Date()
   }
-
-  const dailyGoals = goals.filter(goal => goal.goalType === 'daily')
-  const oneTimeGoals = goals.filter(goal => goal.goalType === 'one-time')
-  const todosArray = Array.isArray(todos) ? todos : []
 
   if (loading) {
     return (
@@ -582,96 +649,111 @@ export default function Home() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Goal
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Streak
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Today
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total Completions
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {dailyGoals.map((goal) => {
-                    const streak = getStreakCount(goal.completions)
-                    const completedToday = isCompletedToday(goal.completions)
-                    
-                    return (
-                      <tr key={goal.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {goal.title}
-                            </div>
-                            {goal.description && (
-                              <div className="text-sm text-gray-500">
-                                {goal.description}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              streak > 0 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {streak} day{streak !== 1 ? 's' : ''}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <button
-                            onClick={() => toggleCompletion(goal.id)}
-                            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${
-                              completedToday
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : 'border-gray-300 hover:border-green-400'
-                            }`}
-                          >
-                            {completedToday && (
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </button>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
-                          {goal.completions.length}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => openEditModal(goal)}
-                              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => setDeletingGoal(goal.id)}
-                              className="text-red-600 hover:text-red-800 text-sm font-medium"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDailyGoalDragEnd}>
+                <SortableContext items={goalOrder} strategy={verticalListSortingStrategy}>
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {/* Drag handle */}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Goal
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Streak
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Today
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Total Completions
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {goalOrder.map(id => {
+                        const goal = dailyGoals.find(g => g.id === id)
+                        if (!goal) return null
+                        const streak = getStreakCount(goal.completions)
+                        const completedToday = isCompletedToday(goal.completions)
+                        return (
+                          <SortableRow key={goal.id} id={goal.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center justify-center">
+                                <svg className="w-5 h-5 text-gray-400 cursor-grab active:cursor-grabbing" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M7 2a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 2zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 8zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 14zm6-8a2 2 0 1 1-.001-4.001A2 2 0 0 1 13 6zm0 2a2 2 0 1 1 .001 4.001A2 2 0 0 1 13 8zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 13 14z"/>
+                                </svg>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {goal.title}
+                                </div>
+                                {goal.description && (
+                                  <div className="text-sm text-gray-500">
+                                    {goal.description}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  streak > 0 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {streak} day{streak !== 1 ? 's' : ''}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <button
+                                onClick={() => toggleCompletion(goal.id)}
+                                className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                  completedToday
+                                    ? 'bg-green-500 border-green-500 text-white'
+                                    : 'border-gray-300 hover:border-green-400'
+                                }`}
+                              >
+                                {completedToday && (
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                )}
+                              </button>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-900">
+                              {goal.completions.length}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => openEditModal(goal)}
+                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => setDeletingGoal(goal.id)}
+                                  className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </SortableRow>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </SortableContext>
+              </DndContext>
             </div>
           )}
         </div>
@@ -688,107 +770,124 @@ export default function Home() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Goal
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Action
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {oneTimeGoals.map((goal) => (
-                    <tr key={goal.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div>
-                          <div className={`text-sm font-medium ${
-                            goal.isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'
-                          }`}>
-                            {goal.title}
-                          </div>
-                          {goal.description && (
-                            <div className={`text-sm ${
-                              goal.isCompleted ? 'text-gray-400' : 'text-gray-500'
-                            }`}>
-                              {goal.description}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="relative status-dropdown">
-                          <button
-                            onClick={() => setStatusDropdownOpen(statusDropdownOpen === goal.id ? null : goal.id)}
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${getStatusColor(goal.status)}`}
-                          >
-                            {getStatusText(goal.status)}
-                            <svg className="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
-                          </button>
-                          
-                          {statusDropdownOpen === goal.id && (
-                            <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 status-dropdown">
-                              <div className="py-1">
-                                {['not-started', 'in-progress', 'on-hold', 'completed', 'cancelled'].map((status) => (
-                                  <button
-                                    key={status}
-                                    onClick={() => updateGoalStatus(goal.id, status)}
-                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
-                                      goal.status === status ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                                    }`}
-                                  >
-                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getStatusColor(status)}`}>
-                                      {getStatusText(status)}
-                                    </span>
-                                  </button>
-                                ))}
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleOneTimeGoalDragEnd}>
+                <SortableContext items={oneTimeGoalOrder} strategy={verticalListSortingStrategy}>
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          {/* Drag handle */}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Goal
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Action
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {oneTimeGoalOrder.map(id => {
+                        const goal = oneTimeGoals.find(g => g.id === id)
+                        if (!goal) return null
+                        return (
+                          <SortableRow key={goal.id} id={goal.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center justify-center">
+                                <svg className="w-5 h-5 text-gray-400 cursor-grab active:cursor-grabbing" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M7 2a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 2zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 8zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 7 14zm6-8a2 2 0 1 1-.001-4.001A2 2 0 0 1 13 6zm0 2a2 2 0 1 1 .001 4.001A2 2 0 0 1 13 8zm0 6a2 2 0 1 1 .001 4.001A2 2 0 0 1 13 14z"/>
+                                </svg>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => toggleOneTimeGoal(goal.id)}
-                          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                            goal.isCompleted
-                              ? 'bg-red-600 text-white hover:bg-red-700'
-                              : 'bg-green-600 text-white hover:bg-green-700'
-                          }`}
-                        >
-                          {goal.isCompleted ? 'Mark Incomplete' : 'Mark Complete'}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => openEditModal(goal)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => setDeletingGoal(goal.id)}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div>
+                                <div className={`text-sm font-medium ${
+                                  goal.isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'
+                                }`}>
+                                  {goal.title}
+                                </div>
+                                {goal.description && (
+                                  <div className={`text-sm ${
+                                    goal.isCompleted ? 'text-gray-400' : 'text-gray-500'
+                                  }`}>
+                                    {goal.description}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="relative status-dropdown">
+                                <button
+                                  onClick={() => setStatusDropdownOpen(statusDropdownOpen === goal.id ? null : goal.id)}
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${getStatusColor(goal.status)}`}
+                                >
+                                  {getStatusText(goal.status)}
+                                  <svg className="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                  </svg>
+                                </button>
+                                {statusDropdownOpen === goal.id && (
+                                  <div className="absolute z-10 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 status-dropdown">
+                                    <div className="py-1">
+                                      {['not-started', 'in-progress', 'on-hold', 'completed', 'cancelled'].map((status) => (
+                                        <button
+                                          key={status}
+                                          onClick={() => updateGoalStatus(goal.id, status)}
+                                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
+                                            goal.status === status ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                                          }`}
+                                        >
+                                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getStatusColor(status)}`}>
+                                            {getStatusText(status)}
+                                          </span>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <button
+                                onClick={() => toggleOneTimeGoal(goal.id)}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                  goal.isCompleted
+                                    ? 'bg-red-600 text-white hover:bg-red-700'
+                                    : 'bg-green-600 text-white hover:bg-green-700'
+                                }`}
+                              >
+                                {goal.isCompleted ? 'Mark Incomplete' : 'Mark Complete'}
+                              </button>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => openEditModal(goal)}
+                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => setDeletingGoal(goal.id)}
+                                  className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </SortableRow>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </SortableContext>
+              </DndContext>
             </div>
           )}
         </div>
