@@ -11,6 +11,19 @@ import { EditGoalModal } from '@/components/modals/EditGoalModal'
 import { EditTodoModal } from '@/components/modals/EditTodoModal'
 import { DeleteConfirmationModal } from '@/components/modals/DeleteConfirmationModal'
 import { BackgroundMovingCards } from '@/components/ui/background-moving-cards'
+import { FloatingDock } from '@/components/ui/floating-dock'
+import {
+  IconBrandGithub,
+  IconBrandX,
+  IconExchange,
+  IconHome,
+  IconNewSection,
+  IconTerminal2,
+  IconSettings,
+  IconUser,
+  IconTarget,
+  IconList,
+} from '@tabler/icons-react'
 
 // Import types
 import { Goal, Todo } from '@/components/types'
@@ -80,6 +93,57 @@ const fightClubQuotes = [
 ];
 
 export default function Home() {
+  const dockItems = [
+    {
+      title: "Home",
+      icon: (
+        <IconHome className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "/",
+    },
+    {
+      title: "Goals",
+      icon: (
+        <IconTarget className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "#goals",
+    },
+    {
+      title: "Tasks",
+      icon: (
+        <IconList className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "#tasks",
+    },
+    {
+      title: "Demo",
+      icon: (
+        <IconNewSection className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "/demo",
+    },
+    {
+      title: "Profile",
+      icon: (
+        <IconUser className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "#profile",
+    },
+    {
+      title: "Settings",
+      icon: (
+        <IconSettings className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "#settings",
+    },
+    {
+      title: "GitHub",
+      icon: (
+        <IconBrandGithub className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "https://github.com",
+    },
+  ];
   // State
   const [goals, setGoals] = useState<Goal[]>([])
   const [todos, setTodos] = useState<Todo[]>([])
@@ -536,6 +600,15 @@ export default function Home() {
             }
           }}
           onCancel={() => setDeletingTodo(null)}
+        />
+      </div>
+      
+      {/* Floating Dock */}
+      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[9999]">
+        <FloatingDock
+          items={dockItems}
+          desktopClassName="shadow-2xl border border-gray-200 dark:border-neutral-700 bg-white/95 backdrop-blur-sm"
+          mobileClassName="translate-y-20"
         />
       </div>
     </div>
