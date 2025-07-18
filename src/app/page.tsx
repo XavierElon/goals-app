@@ -24,7 +24,6 @@ export default function Home() {
   const [showTodoEditModal, setShowTodoEditModal] = useState(false)
   const [deletingGoal, setDeletingGoal] = useState<string | null>(null)
   const [deletingTodo, setDeletingTodo] = useState<string | null>(null)
-  const [statusDropdownOpen, setStatusDropdownOpen] = useState<string | null>(null)
 
   // Computed values
   const dailyGoals = useMemo(() => goals.filter(goal => goal.goalType === 'daily'), [goals])
@@ -36,19 +35,7 @@ export default function Home() {
     fetchTodos()
   }, [])
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element
-      if (statusDropdownOpen && !target.closest('.status-dropdown')) {
-        setStatusDropdownOpen(null)
-      }
-    }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [statusDropdownOpen])
 
   // API Functions
   const fetchGoals = async () => {
@@ -324,8 +311,6 @@ export default function Home() {
           onToggleOneTimeGoal={toggleOneTimeGoal}
           onEdit={openEditModal}
           onDelete={setDeletingGoal}
-          onDropdownClick={setStatusDropdownOpen}
-          openDropdown={statusDropdownOpen}
           goalType="daily"
           onReorder={reorderGoals}
         />
@@ -339,8 +324,6 @@ export default function Home() {
           onToggleOneTimeGoal={toggleOneTimeGoal}
           onEdit={openEditModal}
           onDelete={setDeletingGoal}
-          onDropdownClick={setStatusDropdownOpen}
-          openDropdown={statusDropdownOpen}
           goalType="one-time"
           onReorder={reorderGoals}
         />

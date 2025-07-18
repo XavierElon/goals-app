@@ -14,8 +14,6 @@ interface GoalSectionProps {
   onToggleOneTimeGoal: (goalId: string) => void
   onEdit: (goal: Goal) => void
   onDelete: (goalId: string) => void
-  onDropdownClick: (id: string) => void
-  openDropdown: string | null
   goalType: 'daily' | 'one-time'
   onReorder: (goals: Goal[]) => void
 }
@@ -28,8 +26,6 @@ export function GoalSection({
   onToggleOneTimeGoal,
   onEdit,
   onDelete,
-  onDropdownClick,
-  openDropdown,
   goalType,
   onReorder
 }: GoalSectionProps) {
@@ -86,8 +82,6 @@ export function GoalSection({
               onToggleOneTimeGoal={onToggleOneTimeGoal}
               onEdit={onEdit}
               onDelete={onDelete}
-              onDropdownClick={onDropdownClick}
-              openDropdown={openDropdown}
               onReorder={onReorder}
             />
           )}

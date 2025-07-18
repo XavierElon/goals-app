@@ -5,6 +5,12 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Goal } from './types'
 import { getStreakCount, isCompletedToday } from './utils'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface SortableGoalRowProps {
   goal: Goal
@@ -13,8 +19,6 @@ interface SortableGoalRowProps {
   onToggleOneTimeGoal: (goalId: string) => void
   onEdit: (goal: Goal) => void
   onDelete: (goalId: string) => void
-  onDropdownClick: (id: string) => void
-  openDropdown: string | null
 }
 
 export function SortableGoalRow({
@@ -23,9 +27,7 @@ export function SortableGoalRow({
   onToggleCompletion,
   onToggleOneTimeGoal,
   onEdit,
-  onDelete,
-  onDropdownClick,
-  openDropdown
+  onDelete
 }: SortableGoalRowProps) {
   const {
     attributes,
@@ -106,13 +108,26 @@ export function SortableGoalRow({
           {goal.completions.length}
         </td>
         <td className="px-6 py-4">
-          <DropdownMenu
-            id={goal.id}
-            openDropdown={openDropdown}
-            onDropdownClick={onDropdownClick}
-            onEdit={() => onEdit(goal)}
-            onDelete={() => onDelete(goal.id)}
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(goal)}>
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => onDelete(goal.id)}
+                variant="destructive"
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </td>
       </tr>
     )
@@ -173,67 +188,29 @@ export function SortableGoalRow({
         </button>
       </td>
       <td className="px-6 py-4">
-        <DropdownMenu
-          id={goal.id}
-          openDropdown={openDropdown}
-          onDropdownClick={onDropdownClick}
-          onEdit={() => onEdit(goal)}
-          onDelete={() => onDelete(goal.id)}
-        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+              </svg>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(goal)}>
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => onDelete(goal.id)}
+              variant="destructive"
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </td>
     </tr>
   )
 }
 
-interface DropdownMenuProps {
-  id: string
-  openDropdown: string | null
-  onDropdownClick: (id: string) => void
-  onEdit: () => void
-  onDelete: () => void
-}
-
-function DropdownMenu({ id, openDropdown, onDropdownClick, onEdit, onDelete }: DropdownMenuProps) {
-  return (
-    <div className="relative status-dropdown">
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          onDropdownClick(id)
-        }}
-        className="text-gray-400 hover:text-gray-600 focus:outline-none"
-      >
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-        </svg>
-      </button>
-      
-      {openDropdown === id && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200 status-dropdown">
-          <div className="py-1">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onEdit()
-                onDropdownClick('')
-              }}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              Edit
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete()
-                onDropdownClick('')
-              }}
-              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-} 
+ 

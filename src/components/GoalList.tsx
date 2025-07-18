@@ -26,8 +26,6 @@ interface GoalListProps {
   onToggleOneTimeGoal: (goalId: string) => void
   onEdit: (goal: Goal) => void
   onDelete: (goalId: string) => void
-  onDropdownClick: (id: string) => void
-  openDropdown: string | null
   onReorder: (goals: Goal[]) => void
 }
 
@@ -38,8 +36,6 @@ export function GoalList({
   onToggleOneTimeGoal,
   onEdit,
   onDelete,
-  onDropdownClick,
-  openDropdown,
   onReorder
 }: GoalListProps) {
   const sensors = useSensors(
@@ -128,8 +124,6 @@ export function GoalList({
                   onToggleOneTimeGoal={onToggleOneTimeGoal}
                   onEdit={onEdit}
                   onDelete={onDelete}
-                  onDropdownClick={onDropdownClick}
-                  openDropdown={openDropdown}
                 />
               ))}
             </tbody>
