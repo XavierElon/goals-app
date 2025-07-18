@@ -31,6 +31,7 @@ interface GoalListProps {
   goalType: 'daily' | 'one-time'
   onToggleCompletion: (goalId: string, date: string) => void
   onToggleOneTimeGoal: (goalId: string) => void
+  onStatusChange: (goalId: string, status: string) => void
   onEdit: (goal: Goal) => void
   onDelete: (goalId: string) => void
   onReorder: (goals: Goal[]) => void
@@ -41,6 +42,7 @@ export function GoalList({
   goalType,
   onToggleCompletion,
   onToggleOneTimeGoal,
+  onStatusChange,
   onEdit,
   onDelete,
   onReorder
@@ -108,6 +110,7 @@ export function GoalList({
                 goalType={goalType}
                 onToggleCompletion={onToggleCompletion}
                 onToggleOneTimeGoal={onToggleOneTimeGoal}
+                onStatusChange={onStatusChange}
                 onEdit={onEdit}
                 onDelete={onDelete}
               />

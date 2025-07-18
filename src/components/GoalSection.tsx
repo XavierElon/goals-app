@@ -12,6 +12,7 @@ interface GoalSectionProps {
   goals: Goal[]
   onToggleCompletion: (goalId: string, date: string) => void
   onToggleOneTimeGoal: (goalId: string) => void
+  onStatusChange: (goalId: string, status: string) => void
   onEdit: (goal: Goal) => void
   onDelete: (goalId: string) => void
   goalType: 'daily' | 'one-time'
@@ -24,6 +25,7 @@ export function GoalSection({
   goals,
   onToggleCompletion,
   onToggleOneTimeGoal,
+  onStatusChange,
   onEdit,
   onDelete,
   goalType,
@@ -83,6 +85,7 @@ export function GoalSection({
               onEdit={onEdit}
               onDelete={onDelete}
               onReorder={onReorder}
+              onStatusChange={onStatusChange}
             />
           )}
 
@@ -92,6 +95,7 @@ export function GoalSection({
             goalType={goalType}
             onToggleCompletion={onToggleCompletion}
             onToggleOneTimeGoal={onToggleOneTimeGoal}
+            onStatusChange={onStatusChange}
             onDelete={onDelete}
           />
         </>

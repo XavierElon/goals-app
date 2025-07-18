@@ -287,6 +287,23 @@ export default function Home() {
     }
   }
 
+  const updateGoalStatus = async (goalId: string, status: string) => {
+    try {
+      await fetch(`/api/goals/${goalId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      })
+      toast.success('Goal status updated!')
+      fetchGoals()
+    } catch (error) {
+      console.error('Error updating goal status:', error)
+      toast.error('Failed to update goal status')
+    }
+  }
+
   const reorderGoals = async (reorderedGoals: Goal[]) => {
     try {
       // Update the order field for each goal based on its new position
@@ -345,6 +362,7 @@ export default function Home() {
           goals={dailyGoals}
           onToggleCompletion={toggleCompletion}
           onToggleOneTimeGoal={toggleOneTimeGoal}
+          onStatusChange={updateGoalStatus}
           onEdit={openEditModal}
           onDelete={setDeletingGoal}
           goalType="daily"
@@ -358,6 +376,7 @@ export default function Home() {
           goals={oneTimeGoals}
           onToggleCompletion={toggleCompletion}
           onToggleOneTimeGoal={toggleOneTimeGoal}
+          onStatusChange={updateGoalStatus}
           onEdit={openEditModal}
           onDelete={setDeletingGoal}
           goalType="one-time"

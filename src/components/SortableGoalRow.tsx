@@ -11,6 +11,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { TableRow, TableCell } from '@/components/ui/table'
 
 interface SortableGoalRowProps {
@@ -18,6 +25,7 @@ interface SortableGoalRowProps {
   goalType: 'daily' | 'one-time'
   onToggleCompletion: (goalId: string, date: string) => void
   onToggleOneTimeGoal: (goalId: string) => void
+  onStatusChange: (goalId: string, status: string) => void
   onEdit: (goal: Goal) => void
   onDelete: (goalId: string) => void
 }
@@ -27,6 +35,7 @@ export function SortableGoalRow({
   goalType,
   onToggleCompletion,
   onToggleOneTimeGoal,
+  onStatusChange,
   onEdit,
   onDelete
 }: SortableGoalRowProps) {
@@ -43,6 +52,40 @@ export function SortableGoalRow({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'not-started':
+        return 'bg-gray-100 text-gray-800'
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800'
+      case 'completed':
+        return 'bg-green-100 text-green-800'
+      case 'on-hold':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'cancelled':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'not-started':
+        return 'Not Started'
+      case 'in-progress':
+        return 'In Progress'
+      case 'completed':
+        return 'Completed'
+      case 'on-hold':
+        return 'On Hold'
+      case 'cancelled':
+        return 'Cancelled'
+      default:
+        return 'In Progress'
+    }
   }
 
   if (goalType === 'daily') {
@@ -184,13 +227,43 @@ export function SortableGoalRow({
         </div>
       </TableCell>
       <TableCell className="px-6 py-4">
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          goal.isCompleted
-            ? 'bg-green-100 text-green-800'
-            : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {goal.isCompleted ? 'Completed' : 'In Progress'}
-        </span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${getStatusColor(goal.status)}`}>
+              {getStatusText(goal.status)}
+              <svg className="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => onStatusChange(goal.id, 'not-started')}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getStatusColor('not-started')}`}>
+                Not Started
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onStatusChange(goal.id, 'in-progress')}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getStatusColor('in-progress')}`}>
+                In Progress
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onStatusChange(goal.id, 'on-hold')}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getStatusColor('on-hold')}`}>
+                On Hold
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onStatusChange(goal.id, 'completed')}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getStatusColor('completed')}`}>
+                Completed
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onStatusChange(goal.id, 'cancelled')}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getStatusColor('cancelled')}`}>
+                Cancelled
+              </span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </TableCell>
       <TableCell className="px-6 py-4">
         <button
