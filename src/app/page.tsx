@@ -265,6 +265,26 @@ export default function Home() {
     }
   }
 
+  const reorderGoals = async (reorderedGoals: Goal[]) => {
+    try {
+      // Update the order field for each goal based on its new position
+      const updatePromises = reorderedGoals.map((goal, index) =>
+        fetch(`/api/goals/${goal.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ order: index }),
+        })
+      )
+
+      await Promise.all(updatePromises)
+      fetchGoals()
+    } catch (error) {
+      console.error('Error reordering goals:', error)
+    }
+  }
+
   // Event Handlers
   const openEditModal = (goal: Goal) => {
     setEditingGoal({ ...goal })
@@ -306,6 +326,7 @@ export default function Home() {
           onDropdownClick={setStatusDropdownOpen}
           openDropdown={statusDropdownOpen}
           goalType="daily"
+          onReorder={reorderGoals}
         />
 
         {/* One-time Goals Section */}
@@ -320,6 +341,7 @@ export default function Home() {
           onDropdownClick={setStatusDropdownOpen}
           openDropdown={statusDropdownOpen}
           goalType="one-time"
+          onReorder={reorderGoals}
         />
 
         {/* To-Do List Section */}
