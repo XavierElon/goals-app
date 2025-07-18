@@ -19,6 +19,14 @@ import {
 import { SortableTodoItem } from './SortableTodoItem'
 import { Todo } from './types'
 import { getPriorityColor, getPriorityText, formatDueDate, isOverdue } from './utils'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table'
 
 interface TodoListProps {
   todos: Todo[]
@@ -63,49 +71,39 @@ export function TodoList({
         items={todos.map(todo => todo.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <div className="flex items-center space-x-2">
-                    <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-                    </svg>
-                    <span>Task</span>
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Priority
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Due Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {todos.map((todo) => (
-                <SortableTodoItem
-                  key={todo.id}
-                  todo={todo}
-                  onToggleCompletion={onToggleCompletion}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  getPriorityColor={getPriorityColor}
-                  getPriorityText={getPriorityText}
-                  formatDueDate={formatDueDate}
-                  isOverdue={isOverdue}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>
+                <div className="flex items-center space-x-2">
+                  <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+                  </svg>
+                  <span>Task</span>
+                </div>
+              </TableHead>
+              <TableHead>Priority</TableHead>
+              <TableHead>Due Date</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {todos.map((todo) => (
+              <SortableTodoItem
+                key={todo.id}
+                todo={todo}
+                onToggleCompletion={onToggleCompletion}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                getPriorityColor={getPriorityColor}
+                getPriorityText={getPriorityText}
+                formatDueDate={formatDueDate}
+                isOverdue={isOverdue}
+              />
+            ))}
+          </TableBody>
+        </Table>
       </SortableContext>
     </DndContext>
   )

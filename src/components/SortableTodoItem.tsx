@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { TableRow, TableCell } from '@/components/ui/table'
 
 interface SortableTodoItemProps {
   todo: Todo
@@ -48,12 +49,12 @@ export function SortableTodoItem({
   }
 
   return (
-    <tr 
+    <TableRow 
       ref={setNodeRef} 
       style={style} 
       className="hover:bg-gray-50"
     >
-      <td className="px-6 py-4">
+      <TableCell className="px-6 py-4">
         <div className="flex items-center space-x-3">
           <div 
             {...attributes} 
@@ -75,13 +76,13 @@ export function SortableTodoItem({
             )}
           </div>
         </div>
-      </td>
-      <td className="px-6 py-4">
+      </TableCell>
+      <TableCell className="px-6 py-4">
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
           {getPriorityText(todo.priority)}
         </span>
-      </td>
-      <td className="px-6 py-4">
+      </TableCell>
+      <TableCell className="px-6 py-4">
         <div className="text-sm text-gray-900">
           {todo.dueDate ? (
             <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-600 font-medium' : ''}>
@@ -92,8 +93,8 @@ export function SortableTodoItem({
             <span className="text-gray-400">No due date</span>
           )}
         </div>
-      </td>
-      <td className="px-6 py-4">
+      </TableCell>
+      <TableCell className="px-6 py-4">
         <button
           onClick={(e) => {
             e.stopPropagation()
@@ -102,8 +103,8 @@ export function SortableTodoItem({
           className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-green-400 flex items-center justify-center transition-colors"
         >
         </button>
-      </td>
-      <td className="px-6 py-4">
+      </TableCell>
+      <TableCell className="px-6 py-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
@@ -124,7 +125,7 @@ export function SortableTodoItem({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 } 

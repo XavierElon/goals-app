@@ -9,6 +9,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table'
 
 interface CompletedTodosProps {
   completedTodos: Todo[]
@@ -54,39 +62,27 @@ export function CompletedTodos({
       </button>
       
       {showCompletedTodos && (
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Task
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Priority
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Due Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Completed
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {completedTodos.map((todo) => (
-                <CompletedTodoRow
-                  key={todo.id}
-                  todo={todo}
-                  onToggleCompletion={onToggleCompletion}
-                  onDelete={onDelete}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Task</TableHead>
+              <TableHead>Priority</TableHead>
+              <TableHead>Due Date</TableHead>
+              <TableHead>Completed</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {completedTodos.map((todo) => (
+              <CompletedTodoRow
+                key={todo.id}
+                todo={todo}
+                onToggleCompletion={onToggleCompletion}
+                onDelete={onDelete}
+              />
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   )
@@ -104,8 +100,8 @@ function CompletedTodoRow({
   onDelete
 }: CompletedTodoRowProps) {
   return (
-    <tr className="bg-gray-50 hover:bg-gray-100">
-      <td className="px-6 py-4">
+    <TableRow className="bg-gray-50 hover:bg-gray-100">
+      <TableCell className="px-6 py-4">
         <div>
           <div className="text-sm font-medium text-gray-500 line-through">
             {todo.title}
@@ -116,13 +112,13 @@ function CompletedTodoRow({
             </div>
           )}
         </div>
-      </td>
-      <td className="px-6 py-4">
+      </TableCell>
+      <TableCell className="px-6 py-4">
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
           {getPriorityText(todo.priority)}
         </span>
-      </td>
-      <td className="px-6 py-4">
+      </TableCell>
+      <TableCell className="px-6 py-4">
         <div className="text-sm text-gray-500">
           {todo.dueDate ? (
             <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-500' : ''}>
@@ -133,8 +129,8 @@ function CompletedTodoRow({
             <span className="text-gray-400">No due date</span>
           )}
         </div>
-      </td>
-      <td className="px-6 py-4">
+      </TableCell>
+      <TableCell className="px-6 py-4">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 rounded-full bg-green-500 border-green-500 text-white flex items-center justify-center">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -145,8 +141,8 @@ function CompletedTodoRow({
             {todo.completedAt ? formatCompletionDate(todo.completedAt) : 'Unknown'}
           </div>
         </div>
-      </td>
-      <td className="px-6">
+      </TableCell>
+      <TableCell className="px-6">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
@@ -167,7 +163,7 @@ function CompletedTodoRow({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 } 

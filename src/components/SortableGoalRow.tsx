@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { TableRow, TableCell } from '@/components/ui/table'
 
 interface SortableGoalRowProps {
   goal: Goal
@@ -49,12 +50,12 @@ export function SortableGoalRow({
     const completedToday = isCompletedToday(goal.completions)
 
     return (
-      <tr 
+      <TableRow 
         ref={setNodeRef} 
         style={style} 
         className="hover:bg-gray-50"
       >
-        <td className="px-6 py-4">
+        <TableCell className="px-6 py-4">
           <div className="flex items-center space-x-3">
             <div 
               {...attributes} 
@@ -76,8 +77,8 @@ export function SortableGoalRow({
               )}
             </div>
           </div>
-        </td>
-        <td className="px-6 py-4">
+        </TableCell>
+        <TableCell className="px-6 py-4">
           <div className="flex items-center">
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
               streak > 0 
@@ -87,8 +88,8 @@ export function SortableGoalRow({
               {streak} day{streak !== 1 ? 's' : ''}
             </span>
           </div>
-        </td>
-        <td className="px-6 py-4">
+        </TableCell>
+        <TableCell className="px-6 py-4">
           <button
             onClick={() => onToggleCompletion(goal.id, new Date().toISOString())}
             className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${
@@ -103,11 +104,11 @@ export function SortableGoalRow({
               </svg>
             )}
           </button>
-        </td>
-        <td className="px-6 py-4 text-sm text-gray-900">
+        </TableCell>
+        <TableCell className="px-6 py-4 text-sm text-gray-900">
           {goal.completions.length}
-        </td>
-        <td className="px-6 py-4">
+        </TableCell>
+        <TableCell className="px-6 py-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
@@ -128,18 +129,18 @@ export function SortableGoalRow({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
     )
   }
 
   return (
-    <tr 
+    <TableRow 
       ref={setNodeRef} 
       style={style} 
       className="hover:bg-gray-50"
     >
-      <td className="px-6 py-4">
+      <TableCell className="px-6 py-4">
         <div className="flex items-center space-x-3">
           <div 
             {...attributes} 
@@ -165,8 +166,8 @@ export function SortableGoalRow({
             )}
           </div>
         </div>
-      </td>
-      <td className="px-6 py-4">
+      </TableCell>
+      <TableCell className="px-6 py-4">
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
           goal.isCompleted
             ? 'bg-green-100 text-green-800'
@@ -174,8 +175,8 @@ export function SortableGoalRow({
         }`}>
           {goal.isCompleted ? 'Completed' : 'In Progress'}
         </span>
-      </td>
-      <td className="px-6 py-4">
+      </TableCell>
+      <TableCell className="px-6 py-4">
         <button
           onClick={() => onToggleOneTimeGoal(goal.id)}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -186,8 +187,8 @@ export function SortableGoalRow({
         >
           {goal.isCompleted ? 'Mark Incomplete' : 'Mark Complete'}
         </button>
-      </td>
-      <td className="px-6 py-4">
+      </TableCell>
+      <TableCell className="px-6 py-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
@@ -208,8 +209,8 @@ export function SortableGoalRow({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 }
 
