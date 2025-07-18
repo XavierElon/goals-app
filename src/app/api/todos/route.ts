@@ -46,10 +46,13 @@ export async function POST(request: NextRequest) {
 
     // Handle date conversion to prevent timezone issues
     let parsedDueDate = null
-    if (dueDate) {
+    if (dueDate && dueDate.trim() !== '') {
       // Create date in local timezone by adding time component
-      const [year, month, day] = dueDate.split('-').map(Number)
-      parsedDueDate = new Date(year, month - 1, day, 12, 0, 0) // Use noon to avoid timezone issues
+      const dateParts = dueDate.split('-').map(Number)
+      if (dateParts.length === 3 && !dateParts.some(isNaN)) {
+        const [year, month, day] = dateParts
+        parsedDueDate = new Date(year, month - 1, day, 12, 0, 0) // Use noon to avoid timezone issues
+      }
     }
 
     const todo = await prisma.todo.create({

@@ -67,7 +67,7 @@ export function EditTodoModal({ todo, isOpen, onClose, onSubmit, onTodoChange }:
               <input
                 type="date"
                 id="edit-todo-dueDate"
-                value={todo.dueDate || ''}
+                value={todo.dueDate ? new Date(todo.dueDate).toISOString().split('T')[0] : ''}
                 onChange={(e) => onTodoChange({ ...todo, dueDate: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
