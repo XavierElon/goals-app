@@ -195,9 +195,12 @@ interface DropdownMenuProps {
 
 function DropdownMenu({ id, openDropdown, onDropdownClick, onEdit, onDelete }: DropdownMenuProps) {
   return (
-    <div className="relative dropdown-container">
+    <div className="relative status-dropdown">
       <button
-        onClick={() => onDropdownClick(id)}
+        onClick={(e) => {
+          e.stopPropagation()
+          onDropdownClick(id)
+        }}
         className="text-gray-400 hover:text-gray-600 focus:outline-none"
       >
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -206,10 +209,11 @@ function DropdownMenu({ id, openDropdown, onDropdownClick, onEdit, onDelete }: D
       </button>
       
       {openDropdown === id && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200 status-dropdown">
           <div className="py-1">
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation()
                 onEdit()
                 onDropdownClick('')
               }}
@@ -218,7 +222,8 @@ function DropdownMenu({ id, openDropdown, onDropdownClick, onEdit, onDelete }: D
               Edit
             </button>
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation()
                 onDelete()
                 onDropdownClick('')
               }}

@@ -38,7 +38,8 @@ export default function Home() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (statusDropdownOpen && !(event.target as Element).closest('.status-dropdown')) {
+      const target = event.target as Element
+      if (statusDropdownOpen && !target.closest('.status-dropdown')) {
         setStatusDropdownOpen(null)
       }
     }
