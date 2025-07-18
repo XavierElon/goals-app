@@ -1,88 +1,193 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
+
+const TodoFormSchema = z.object({
+  title: z.string().min(1, {
+    message: "Task title is required.",
+  }).max(100, {
+    message: "Task title must be less than 100 characters.",
+  }),
+  description: z.string().max(500, {
+    message: "Description must be less than 500 characters.",
+  }).optional(),
+  priority: z.enum(["low", "medium", "high"]),
+  dueDate: z.date().optional(),
+})
+
+type TodoFormData = z.infer<typeof TodoFormSchema>
 
 interface TodoFormProps {
   onSubmit: (todo: { title: string; description: string; priority: string; dueDate: string }) => void
 }
 
 export function TodoForm({ onSubmit }: TodoFormProps) {
-  const [newTodo, setNewTodo] = useState({ title: '', description: '', priority: 'medium', dueDate: '' })
+  const form = useForm<TodoFormData>({
+    resolver: zodResolver(TodoFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      priority: "medium",
+    },
+  })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newTodo.title.trim()) return
-
-    onSubmit(newTodo)
-    setNewTodo({ title: '', description: '', priority: 'medium', dueDate: '' })
+  function handleSubmit(data: TodoFormData) {
+    onSubmit({
+      title: data.title,
+      description: data.description || "",
+      priority: data.priority,
+      dueDate: data.dueDate ? format(data.dueDate, "yyyy-MM-dd") : "",
+    })
+    
+    // Reset form after submission
+    form.reset()
   }
 
   return (
     <div className="p-6 border-b border-gray-200">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="md:col-span-2">
-            <label htmlFor="todo-title" className="block text-sm font-medium text-gray-700 mb-1">
-              Task Title *
-            </label>
-            <input
-              type="text"
-              id="todo-title"
-              value={newTodo.title}
-              onChange={(e) => setNewTodo({ ...newTodo, title: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your task..."
-              required
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="md:col-span-2">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Task Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your task..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div>
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div>
+              <FormField
+                control={form.control}
+                name="dueDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Due Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) =>
+                            date < new Date(new Date().setHours(0, 0, 0, 0))
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+          
+          <div>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Add details about this task..." {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Provide additional details about your task.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
-          <div>
-            <label htmlFor="todo-priority" className="block text-sm font-medium text-gray-700 mb-1">
-              Priority
-            </label>
-            <select
-              id="todo-priority"
-              value={newTodo.priority}
-              onChange={(e) => setNewTodo({ ...newTodo, priority: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="todo-dueDate" className="block text-sm font-medium text-gray-700 mb-1">
-              Due Date
-            </label>
-            <input
-              type="date"
-              id="todo-dueDate"
-              value={newTodo.dueDate}
-              onChange={(e) => setNewTodo({ ...newTodo, dueDate: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-        <div>
-          <label htmlFor="todo-description" className="block text-sm font-medium text-gray-700 mb-1">
-            Description (optional)
-          </label>
-          <textarea
-            id="todo-description"
-            value={newTodo.description}
-            onChange={(e) => setNewTodo({ ...newTodo, description: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Add details about this task..."
-            rows={2}
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors"
-        >
-          Add Task
-        </button>
-      </form>
+          
+          <Button type="submit" className="bg-green-600 hover:bg-green-700">
+            Add Task
+          </Button>
+        </form>
+      </Form>
     </div>
   )
 } 
