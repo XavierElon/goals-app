@@ -4,7 +4,7 @@ import React from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/stateful-button"
 import {
   Form,
   FormControl,
@@ -39,10 +39,12 @@ const GoalFormSchema = z.object({
 type GoalFormData = z.infer<typeof GoalFormSchema>
 
 interface GoalFormProps {
-  onSubmit: (goal: { title: string; description: string; goalType: string }) => void
+  onSubmit: (goal: { title: string; description: string; goalType: string }) => Promise<void>
 }
 
 export function GoalForm({ onSubmit }: GoalFormProps) {
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  
   const form = useForm<GoalFormData>({
     resolver: zodResolver(GoalFormSchema),
     defaultValues: {
@@ -52,15 +54,20 @@ export function GoalForm({ onSubmit }: GoalFormProps) {
     },
   })
 
-  function handleSubmit(data: GoalFormData) {
-    onSubmit({
-      title: data.title,
-      description: data.description || "",
-      goalType: data.goalType,
-    })
-    
-    // Reset form after submission
-    form.reset()
+  async function handleSubmit(data: GoalFormData) {
+    setIsSubmitting(true)
+    try {
+      await onSubmit({
+        title: data.title,
+        description: data.description || "",
+        goalType: data.goalType,
+      })
+      
+      // Reset form after submission
+      form.reset()
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -121,7 +128,7 @@ export function GoalForm({ onSubmit }: GoalFormProps) {
             )}
           />
           
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" isSubmitting={isSubmitting}>
             Add Goal
           </Button>
         </form>

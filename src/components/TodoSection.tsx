@@ -8,7 +8,7 @@ import { CompletedTodos } from './CompletedTodos'
 
 interface TodoSectionProps {
   todos: Todo[]
-  onAddTodo: (todoData: { title: string; description: string; priority: string; dueDate: string }) => void
+  onAddTodo: (todoData: { title: string; description: string; priority: string; dueDate: string }) => Promise<void>
   onToggleCompletion: (id: string, isCompleted: boolean) => void
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void

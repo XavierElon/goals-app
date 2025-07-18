@@ -403,14 +403,22 @@ export default function Home() {
         <DeleteConfirmationModal
           isOpen={!!deletingGoal}
           itemType="goal"
-          onConfirm={() => deletingGoal && deleteGoal(deletingGoal)}
+          onConfirm={async () => {
+            if (deletingGoal) {
+              await deleteGoal(deletingGoal)
+            }
+          }}
           onCancel={() => setDeletingGoal(null)}
         />
 
         <DeleteConfirmationModal
           isOpen={!!deletingTodo}
           itemType="todo"
-          onConfirm={() => deletingTodo && deleteTodo(deletingTodo)}
+          onConfirm={async () => {
+            if (deletingTodo) {
+              await deleteTodo(deletingTodo)
+            }
+          }}
           onCancel={() => setDeletingTodo(null)}
         />
       </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/stateful-button"
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
 interface DeleteConfirmationModalProps {
   isOpen: boolean
   itemType: 'goal' | 'todo'
-  onConfirm: () => void
+  onConfirm: () => Promise<void>
   onCancel: () => void
 }
 

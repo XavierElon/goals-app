@@ -7,7 +7,7 @@ import { z } from "zod"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { Todo } from '../types'
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/stateful-button"
 import {
   Form,
   FormControl,
@@ -59,7 +59,7 @@ interface EditTodoModalProps {
   todo: Todo | null
   isOpen: boolean
   onClose: () => void
-  onSubmit: (e: React.FormEvent) => void
+  onSubmit: (e: React.FormEvent) => Promise<void>
   onTodoChange: (todo: Todo) => void
 }
 
@@ -76,7 +76,7 @@ export function EditTodoModal({ todo, isOpen, onClose, onSubmit, onTodoChange }:
     },
   })
 
-  function handleSubmit(data: EditTodoData) {
+  async function handleSubmit(data: EditTodoData) {
     if (!todo) return
     const updatedTodo: Todo = {
       id: todo.id,
@@ -89,7 +89,7 @@ export function EditTodoModal({ todo, isOpen, onClose, onSubmit, onTodoChange }:
       completedAt: todo.completedAt,
     }
     onTodoChange(updatedTodo)
-    onSubmit(new Event('submit') as any)
+    await onSubmit(new Event('submit') as any)
   }
 
   return (

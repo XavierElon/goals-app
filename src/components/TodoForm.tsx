@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/stateful-button"
 import {
   Form,
   FormControl,
@@ -48,10 +48,12 @@ const TodoFormSchema = z.object({
 type TodoFormData = z.infer<typeof TodoFormSchema>
 
 interface TodoFormProps {
-  onSubmit: (todo: { title: string; description: string; priority: string; dueDate: string }) => void
+  onSubmit: (todo: { title: string; description: string; priority: string; dueDate: string }) => Promise<void>
 }
 
 export function TodoForm({ onSubmit }: TodoFormProps) {
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  
   const form = useForm<TodoFormData>({
     resolver: zodResolver(TodoFormSchema),
     defaultValues: {
@@ -61,16 +63,21 @@ export function TodoForm({ onSubmit }: TodoFormProps) {
     },
   })
 
-  function handleSubmit(data: TodoFormData) {
-    onSubmit({
-      title: data.title,
-      description: data.description || "",
-      priority: data.priority,
-      dueDate: data.dueDate ? format(data.dueDate, "yyyy-MM-dd") : "",
-    })
-    
-    // Reset form after submission
-    form.reset()
+  async function handleSubmit(data: TodoFormData) {
+    setIsSubmitting(true)
+    try {
+      await onSubmit({
+        title: data.title,
+        description: data.description || "",
+        priority: data.priority,
+        dueDate: data.dueDate ? format(data.dueDate, "yyyy-MM-dd") : "",
+      })
+      
+      // Reset form after submission
+      form.reset()
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -183,7 +190,7 @@ export function TodoForm({ onSubmit }: TodoFormProps) {
             />
           </div>
           
-          <Button type="submit" className="bg-green-600 hover:bg-green-700">
+          <Button type="submit" className="bg-green-600 hover:bg-green-700" isSubmitting={isSubmitting}>
             Add Task
           </Button>
         </form>

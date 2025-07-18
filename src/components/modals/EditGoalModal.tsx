@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Goal } from '../types'
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/stateful-button"
 import {
   Form,
   FormControl,
