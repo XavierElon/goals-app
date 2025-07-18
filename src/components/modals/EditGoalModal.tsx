@@ -1,7 +1,28 @@
 'use client'
 
 import React from 'react'
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 import { Goal } from '../types'
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -9,6 +30,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+
+const EditGoalSchema = z.object({
+  title: z.string().min(1, {
+    message: "Goal title is required.",
+  }).max(100, {
+    message: "Goal title must be less than 100 characters.",
+  }),
+  description: z.string().max(500, {
+    message: "Description must be less than 500 characters.",
+  }).optional(),
+  goalType: z.string(),
+  status: z.string().optional(),
+})
+
+type EditGoalData = z.infer<typeof EditGoalSchema>
 
 interface EditGoalModalProps {
   goal: Goal | null
@@ -21,6 +57,33 @@ interface EditGoalModalProps {
 export function EditGoalModal({ goal, isOpen, onClose, onSubmit, onGoalChange }: EditGoalModalProps) {
   if (!goal) return null
 
+  const form = useForm<EditGoalData>({
+    resolver: zodResolver(EditGoalSchema),
+    defaultValues: {
+      title: goal.title,
+      description: goal.description || "",
+      goalType: goal.goalType,
+      status: goal.status || "in-progress",
+    },
+  })
+
+  function handleSubmit(data: EditGoalData) {
+    if (!goal) return
+    const updatedGoal: Goal = {
+      id: goal.id,
+      title: data.title,
+      description: data.description || "",
+      goalType: data.goalType,
+      status: data.status || goal.status,
+      isCompleted: goal.isCompleted,
+      createdAt: goal.createdAt,
+      completions: goal.completions,
+      completedAt: goal.completedAt,
+    }
+    onGoalChange(updatedGoal)
+    onSubmit(new Event('submit') as any)
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -30,81 +93,98 @@ export function EditGoalModal({ goal, isOpen, onClose, onSubmit, onGoalChange }:
             Make changes to your goal here. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700 mb-1">
-              Goal Title *
-            </label>
-            <input
-              type="text"
-              id="edit-title"
-              value={goal.title}
-              onChange={(e) => onGoalChange({ ...goal, title: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Goal Title</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div>
-            <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 mb-1">
-              Description (optional)
-            </label>
-            <textarea
-              id="edit-description"
-              value={goal.description || ''}
-              onChange={(e) => onGoalChange({ ...goal, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={3}
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description (optional)</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Provide additional details about your goal.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div>
-            <label htmlFor="edit-goalType" className="block text-sm font-medium text-gray-700 mb-1">
-              Goal Type *
-            </label>
-            <select
-              id="edit-goalType"
-              value={goal.goalType}
-              onChange={(e) => onGoalChange({ ...goal, goalType: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="daily">Daily Goal (track daily progress)</option>
-              <option value="one-time">One-time Goal (achieve once)</option>
-            </select>
-          </div>
-          {goal.goalType === 'one-time' && (
-            <div>
-              <label htmlFor="edit-status" className="block text-sm font-medium text-gray-700 mb-1">
-                Status
-              </label>
-              <select
-                id="edit-status"
-                value={goal.status || 'in-progress'}
-                onChange={(e) => onGoalChange({ ...goal, status: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="not-started">Not Started</option>
-                <option value="in-progress">In Progress</option>
-                <option value="on-hold">On Hold</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+            
+            <FormField
+              control={form.control}
+              name="goalType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Goal Type</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a goal type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily Goal (track daily progress)</SelectItem>
+                      <SelectItem value="one-time">One-time Goal (achieve once)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {form.watch("goalType") === 'one-time' && (
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="not-started">Not Started</SelectItem>
+                        <SelectItem value="in-progress">In Progress</SelectItem>
+                        <SelectItem value="on-hold">On Hold</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            
+            <div className="flex space-x-3">
+              <Button type="submit" className="flex-1">
+                Save Changes
+              </Button>
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+                Cancel
+              </Button>
             </div>
-          )}
-          <div className="flex space-x-3">
-            <button
-              type="submit"
-              className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Save Changes
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )

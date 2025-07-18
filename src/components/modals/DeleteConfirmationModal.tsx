@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -27,18 +28,20 @@ export function DeleteConfirmationModal({ isOpen, itemType, onConfirm, onCancel 
           </DialogDescription>
         </DialogHeader>
         <div className="flex space-x-3">
-          <button
+          <Button 
             onClick={onConfirm}
-            className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+            variant="destructive"
+            className="flex-1"
           >
             Delete
-          </button>
-          <button
+          </Button>
+          <Button 
             onClick={onCancel}
-            className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
+            variant="outline"
+            className="flex-1"
           >
             Cancel
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
