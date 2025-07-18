@@ -12,8 +12,6 @@ interface TodoSectionProps {
   onToggleCompletion: (id: string, isCompleted: boolean) => void
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
-  onDropdownClick: (id: string) => void
-  openDropdown: string | null
   onReorder: (todos: Todo[]) => void
 }
 
@@ -23,8 +21,6 @@ export function TodoSection({
   onToggleCompletion,
   onEdit,
   onDelete,
-  onDropdownClick,
-  openDropdown,
   onReorder
 }: TodoSectionProps) {
   const activeTodos = todos.filter(todo => !todo.isCompleted)
@@ -54,8 +50,6 @@ export function TodoSection({
               onToggleCompletion={onToggleCompletion}
               onEdit={onEdit}
               onDelete={onDelete}
-              onDropdownClick={onDropdownClick}
-              openDropdown={openDropdown}
               onReorder={onReorder}
             />
           )}
@@ -65,8 +59,6 @@ export function TodoSection({
             completedTodos={completedTodos}
             onToggleCompletion={onToggleCompletion}
             onDelete={onDelete}
-            onDropdownClick={onDropdownClick}
-            openDropdown={openDropdown}
           />
         </>
       )}

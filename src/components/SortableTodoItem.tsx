@@ -4,14 +4,18 @@ import React from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Todo } from './types'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface SortableTodoItemProps {
   todo: Todo
   onToggleCompletion: (id: string, isCompleted: boolean) => void
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
-  onDropdownClick: (id: string) => void
-  openDropdown: string | null
   getPriorityColor: (priority: string) => string
   getPriorityText: (priority: string) => string
   formatDueDate: (dueDate: string) => string | null
@@ -23,8 +27,6 @@ export function SortableTodoItem({
   onToggleCompletion, 
   onEdit, 
   onDelete, 
-  onDropdownClick, 
-  openDropdown, 
   getPriorityColor, 
   getPriorityText, 
   formatDueDate, 
@@ -102,47 +104,26 @@ export function SortableTodoItem({
         </button>
       </td>
       <td className="px-6 py-4">
-        <div className="relative dropdown-container">
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              onDropdownClick(todo.id)
-            }}
-            className="text-gray-400 hover:text-gray-600 focus:outline-none"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-            </svg>
-          </button>
-          
-          {openDropdown === todo.id && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-              <div className="py-1">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onEdit(todo)
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onDelete(todo.id)
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+              </svg>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(todo)}>
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => onDelete(todo.id)}
+              variant="destructive"
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </td>
     </tr>
   )

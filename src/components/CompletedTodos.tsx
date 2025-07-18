@@ -3,21 +3,23 @@
 import React, { useState } from 'react'
 import { Todo } from './types'
 import { getPriorityColor, getPriorityText, formatDueDate, formatCompletionDate, isOverdue } from './utils'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface CompletedTodosProps {
   completedTodos: Todo[]
   onToggleCompletion: (id: string, isCompleted: boolean) => void
   onDelete: (id: string) => void
-  onDropdownClick: (id: string) => void
-  openDropdown: string | null
 }
 
 export function CompletedTodos({
   completedTodos,
   onToggleCompletion,
-  onDelete,
-  onDropdownClick,
-  openDropdown
+  onDelete
 }: CompletedTodosProps) {
   const [showCompletedTodos, setShowCompletedTodos] = useState(false)
 
@@ -80,8 +82,6 @@ export function CompletedTodos({
                   todo={todo}
                   onToggleCompletion={onToggleCompletion}
                   onDelete={onDelete}
-                  onDropdownClick={onDropdownClick}
-                  openDropdown={openDropdown}
                 />
               ))}
             </tbody>
@@ -96,16 +96,12 @@ interface CompletedTodoRowProps {
   todo: Todo
   onToggleCompletion: (id: string, isCompleted: boolean) => void
   onDelete: (id: string) => void
-  onDropdownClick: (id: string) => void
-  openDropdown: string | null
 }
 
 function CompletedTodoRow({
   todo,
   onToggleCompletion,
-  onDelete,
-  onDropdownClick,
-  openDropdown
+  onDelete
 }: CompletedTodoRowProps) {
   return (
     <tr className="bg-gray-50 hover:bg-gray-100">
@@ -150,42 +146,27 @@ function CompletedTodoRow({
           </div>
         </div>
       </td>
-      <td className="px-6 py-4">
-        <div className="relative dropdown-container">
-          <button
-            onClick={() => onDropdownClick(todo.id)}
-            className="text-gray-400 hover:text-gray-600 focus:outline-none"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-            </svg>
-          </button>
-          
-          {openDropdown === todo.id && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-              <div className="py-1">
-                <button
-                  onClick={() => {
-                    onToggleCompletion(todo.id, todo.isCompleted)
-                    onDropdownClick('')
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Reopen
-                </button>
-                <button
-                  onClick={() => {
-                    onDelete(todo.id)
-                    onDropdownClick('')
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+      <td className="px-6">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+              </svg>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onToggleCompletion(todo.id, todo.isCompleted)}>
+              Reopen
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => onDelete(todo.id)}
+              variant="destructive"
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </td>
     </tr>
   )

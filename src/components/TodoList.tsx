@@ -25,8 +25,6 @@ interface TodoListProps {
   onToggleCompletion: (id: string, isCompleted: boolean) => void
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
-  onDropdownClick: (id: string) => void
-  openDropdown: string | null
   onReorder: (todos: Todo[]) => void
 }
 
@@ -35,8 +33,6 @@ export function TodoList({
   onToggleCompletion,
   onEdit,
   onDelete,
-  onDropdownClick,
-  openDropdown,
   onReorder
 }: TodoListProps) {
   const sensors = useSensors(
@@ -101,8 +97,6 @@ export function TodoList({
                   onToggleCompletion={onToggleCompletion}
                   onEdit={onEdit}
                   onDelete={onDelete}
-                  onDropdownClick={onDropdownClick}
-                  openDropdown={openDropdown}
                   getPriorityColor={getPriorityColor}
                   getPriorityText={getPriorityText}
                   formatDueDate={formatDueDate}
