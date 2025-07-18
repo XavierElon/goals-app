@@ -30,7 +30,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, description, goalType, status } = await request.json()
+    const { title, description, goalType, status, targetDate } = await request.json()
 
     if (!title) {
       return NextResponse.json(
@@ -39,12 +39,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Handle date conversion to prevent timezone issues
+    let parsedTargetDate = null
+    if (targetDate && targetDate.trim() !== '') {
+      // Create date in local timezone by adding time component
+      const dateParts = targetDate.split('-').map(Number)
+      if (dateParts.length === 3 && !dateParts.some(isNaN)) {
+        const [year, month, day] = dateParts
+        parsedTargetDate = new Date(year, month - 1, day, 12, 0, 0) // Use noon to avoid timezone issues
+      }
+    }
+
     const goal = await prisma.goal.create({
       data: {
         title,
         description,
         goalType: goalType || 'daily',
-        status: status || 'in-progress'
+        status: status || 'in-progress',
+        targetDate: parsedTargetDate
       }
     })
 

@@ -92,6 +92,7 @@ export function GoalList({
                 </>
               ) : (
                 <>
+                  <TableHead>Target Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Action</TableHead>
                 </>

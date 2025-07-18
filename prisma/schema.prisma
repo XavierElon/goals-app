@@ -20,6 +20,7 @@ model Goal {
   goalType    String   @default("daily") // "daily" or "one-time"
   isCompleted Boolean  @default(false)
   completedAt DateTime?
+  targetDate  DateTime? // Target date for one-time goals
   status      String   @default("in-progress") // "not-started", "in-progress", "completed", "on-hold", "cancelled"
   order       Int      @default(0)
   createdAt   DateTime @default(now())

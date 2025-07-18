@@ -4,6 +4,8 @@ import React from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
 import { Button } from "@/components/ui/stateful-button"
 import {
   Form,
@@ -23,6 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 const GoalFormSchema = z.object({
   title: z.string().min(1, {
@@ -34,12 +43,21 @@ const GoalFormSchema = z.object({
     message: "Description must be less than 500 characters.",
   }).optional(),
   goalType: z.enum(["daily", "one-time"]),
-})
+  targetDate: z.date().optional(),
+}).refine((data) => {
+  if (data.goalType === "one-time") {
+    return data.targetDate !== undefined;
+  }
+  return true;
+}, {
+  message: "Target date is required for one-time goals.",
+  path: ["targetDate"],
+});
 
 type GoalFormData = z.infer<typeof GoalFormSchema>
 
 interface GoalFormProps {
-  onSubmit: (goal: { title: string; description: string; goalType: string }) => Promise<void>
+  onSubmit: (goal: { title: string; description: string; goalType: string; targetDate?: string }) => Promise<void>
 }
 
 export function GoalForm({ onSubmit }: GoalFormProps) {
@@ -54,6 +72,8 @@ export function GoalForm({ onSubmit }: GoalFormProps) {
     },
   })
 
+  const selectedGoalType = form.watch("goalType")
+
   async function handleSubmit(data: GoalFormData) {
     setIsSubmitting(true)
     try {
@@ -61,6 +81,7 @@ export function GoalForm({ onSubmit }: GoalFormProps) {
         title: data.title,
         description: data.description || "",
         goalType: data.goalType,
+        targetDate: data.targetDate ? format(data.targetDate, "yyyy-MM-dd") : undefined,
       })
       
       // Reset form after submission
@@ -106,27 +127,77 @@ export function GoalForm({ onSubmit }: GoalFormProps) {
             )}
           />
           
-          <FormField
-            control={form.control}
-            name="goalType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Goal Type</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a goal type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="daily">Daily Goal (track daily progress)</SelectItem>
-                    <SelectItem value="one-time">One-time Goal (achieve once)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <FormField
+                control={form.control}
+                name="goalType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Goal Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a goal type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="daily">Daily Goal</SelectItem>
+                        <SelectItem value="one-time">One-time Goal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            {selectedGoalType === "one-time" && (
+              <div className="flex-1">
+                <FormField
+                  control={form.control}
+                  name="targetDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Target Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date < new Date(new Date().setHours(0, 0, 0, 0))
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             )}
-          />
+          </div>
           
           <Button type="submit" className="w-full" isSubmitting={isSubmitting}>
             Add Goal

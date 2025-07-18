@@ -77,7 +77,10 @@ export function CompletedGoals({
                 </>
               )}
               {goalType === 'one-time' && (
-                <TableHead>Status</TableHead>
+                <>
+                  <TableHead>Target Date</TableHead>
+                  <TableHead>Status</TableHead>
+                </>
               )}
               <TableHead>Completed</TableHead>
               <TableHead>Actions</TableHead>
@@ -203,6 +206,22 @@ function CompletedGoalRow({
             <div className="text-sm text-gray-400 line-through">
               {goal.description}
             </div>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="px-6 py-4">
+        <div className="text-sm text-gray-500">
+          {goal.targetDate ? (
+            <span className={new Date(goal.targetDate) < new Date(goal.completedAt || '') ? 'text-red-500' : ''}>
+              {new Date(goal.targetDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              })}
+              {new Date(goal.targetDate) < new Date(goal.completedAt || '') && ' (Was Overdue)'}
+            </span>
+          ) : (
+            <span className="text-gray-400">No target date</span>
           )}
         </div>
       </TableCell>

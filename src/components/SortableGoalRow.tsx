@@ -168,6 +168,22 @@ export function SortableGoalRow({
         </div>
       </TableCell>
       <TableCell className="px-6 py-4">
+        <div className="text-sm text-gray-900">
+          {goal.targetDate ? (
+            <span className={new Date(goal.targetDate) < new Date() && !goal.isCompleted ? 'text-red-600 font-medium' : ''}>
+              {new Date(goal.targetDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              })}
+              {new Date(goal.targetDate) < new Date() && !goal.isCompleted && ' (Overdue)'}
+            </span>
+          ) : (
+            <span className="text-gray-400">No target date</span>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="px-6 py-4">
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
           goal.isCompleted
             ? 'bg-green-100 text-green-800'
