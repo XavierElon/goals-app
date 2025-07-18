@@ -3,6 +3,8 @@
 import React from 'react'
 import { Goal } from './types'
 import { GoalList } from './GoalList'
+import { CompletedGoals } from './CompletedGoals'
+import { isCompletedToday } from './utils'
 
 interface GoalSectionProps {
   title: string
@@ -31,6 +33,22 @@ export function GoalSection({
   goalType,
   onReorder
 }: GoalSectionProps) {
+  const activeGoals = goals.filter(goal => {
+    if (goalType === 'daily') {
+      return !isCompletedToday(goal.completions)
+    } else {
+      return !goal.isCompleted
+    }
+  })
+  
+  const completedGoals = goals.filter(goal => {
+    if (goalType === 'daily') {
+      return isCompletedToday(goal.completions)
+    } else {
+      return goal.isCompleted
+    }
+  })
+
   if (goals.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
@@ -51,17 +69,39 @@ export function GoalSection({
         <h2 className="text-xl font-semibold">{title}</h2>
         <p className="text-sm text-gray-500 mt-1">{description} Drag goals to reorder them by priority.</p>
       </div>
-      <GoalList
-        goals={goals}
-        goalType={goalType}
-        onToggleCompletion={onToggleCompletion}
-        onToggleOneTimeGoal={onToggleOneTimeGoal}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        onDropdownClick={onDropdownClick}
-        openDropdown={openDropdown}
-        onReorder={onReorder}
+      
+      {/* Active Goals List */}
+      {activeGoals.length === 0 && completedGoals.length === 0 ? (
+        <div className="p-6 text-center text-gray-500">
+          No {goalType} goals yet. Add your first {goalType} goal above!
+        </div>
+      ) : (
+        <>
+          {/* Active Goals */}
+          {activeGoals.length > 0 && (
+            <GoalList
+              goals={activeGoals}
+              goalType={goalType}
+              onToggleCompletion={onToggleCompletion}
+              onToggleOneTimeGoal={onToggleOneTimeGoal}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onDropdownClick={onDropdownClick}
+              openDropdown={openDropdown}
+              onReorder={onReorder}
             />
+          )}
+
+          {/* Completed Goals Section */}
+          <CompletedGoals
+            completedGoals={completedGoals}
+            goalType={goalType}
+            onToggleCompletion={onToggleCompletion}
+            onToggleOneTimeGoal={onToggleOneTimeGoal}
+            onDelete={onDelete}
+          />
+        </>
+      )}
     </div>
   )
 } 
