@@ -14,11 +14,8 @@ import { BackgroundMovingCards } from '@/components/ui/background-moving-cards'
 import { FloatingDock } from '@/components/ui/floating-dock'
 import {
   IconBrandGithub,
-  IconBrandX,
-  IconExchange,
   IconHome,
   IconNewSection,
-  IconTerminal2,
   IconSettings,
   IconUser,
   IconTarget,
