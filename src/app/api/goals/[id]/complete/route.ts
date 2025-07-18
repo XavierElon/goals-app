@@ -31,7 +31,8 @@ export async function POST(
     const updatedGoal = await prisma.goal.update({
       where: { id: goalId },
       data: {
-        isCompleted: !goal.isCompleted
+        isCompleted: !goal.isCompleted,
+        completedAt: !goal.isCompleted ? new Date() : null
       }
     })
 

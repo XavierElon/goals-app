@@ -229,7 +229,7 @@ function CompletedGoalRow({
             </svg>
           </div>
           <div className="text-sm text-gray-600">
-            {goal.isCompleted ? 'Completed' : 'Unknown'}
+            {goal.completedAt ? formatCompletionDate(goal.completedAt) : 'Unknown'}
           </div>
         </div>
       </td>
