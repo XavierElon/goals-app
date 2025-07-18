@@ -1,6 +1,13 @@
 'use client'
 
 import React from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean
@@ -10,15 +17,15 @@ interface DeleteConfirmationModalProps {
 }
 
 export function DeleteConfirmationModal({ isOpen, itemType, onConfirm, onCancel }: DeleteConfirmationModalProps) {
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <h3 className="text-lg font-semibold mb-4">Delete {itemType === 'goal' ? 'Goal' : 'Task'}</h3>
-        <p className="text-gray-600 mb-6">
-          Are you sure you want to delete this {itemType}? This action cannot be undone.
-        </p>
+    <Dialog open={isOpen} onOpenChange={onCancel}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Delete {itemType === 'goal' ? 'Goal' : 'Task'}</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete this {itemType}? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
         <div className="flex space-x-3">
           <button
             onClick={onConfirm}
@@ -33,7 +40,7 @@ export function DeleteConfirmationModal({ isOpen, itemType, onConfirm, onCancel 
             Cancel
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 } 

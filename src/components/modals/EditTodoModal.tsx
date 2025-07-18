@@ -2,6 +2,13 @@
 
 import React from 'react'
 import { Todo } from '../types'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface EditTodoModalProps {
   todo: Todo | null
@@ -12,12 +19,17 @@ interface EditTodoModalProps {
 }
 
 export function EditTodoModal({ todo, isOpen, onClose, onSubmit, onTodoChange }: EditTodoModalProps) {
-  if (!isOpen || !todo) return null
+  if (!todo) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <h3 className="text-lg font-semibold mb-4">Edit Task</h3>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Task</DialogTitle>
+          <DialogDescription>
+            Make changes to your task here. Click save when you're done.
+          </DialogDescription>
+        </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label htmlFor="edit-todo-title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -89,7 +101,7 @@ export function EditTodoModal({ todo, isOpen, onClose, onSubmit, onTodoChange }:
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 } 

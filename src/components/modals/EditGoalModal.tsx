@@ -2,6 +2,13 @@
 
 import React from 'react'
 import { Goal } from '../types'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface EditGoalModalProps {
   goal: Goal | null
@@ -12,12 +19,17 @@ interface EditGoalModalProps {
 }
 
 export function EditGoalModal({ goal, isOpen, onClose, onSubmit, onGoalChange }: EditGoalModalProps) {
-  if (!isOpen || !goal) return null
+  if (!goal) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <h3 className="text-lg font-semibold mb-4">Edit Goal</h3>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Goal</DialogTitle>
+          <DialogDescription>
+            Make changes to your goal here. Click save when you're done.
+          </DialogDescription>
+        </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -93,7 +105,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSubmit, onGoalChange }:
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 } 
