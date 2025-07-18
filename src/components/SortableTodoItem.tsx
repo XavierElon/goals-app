@@ -17,6 +17,7 @@ interface SortableTodoItemProps {
   onToggleCompletion: (id: string, isCompleted: boolean) => void
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
+  onPriorityChange: (id: string, priority: string) => void
   getPriorityColor: (priority: string) => string
   getPriorityText: (priority: string) => string
   formatDueDate: (dueDate: string) => string | null
@@ -28,6 +29,7 @@ export function SortableTodoItem({
   onToggleCompletion, 
   onEdit, 
   onDelete, 
+  onPriorityChange,
   getPriorityColor, 
   getPriorityText, 
   formatDueDate, 
@@ -78,9 +80,38 @@ export function SortableTodoItem({
         </div>
       </TableCell>
       <TableCell className="px-6 py-4">
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
-          {getPriorityText(todo.priority)}
-        </span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${getPriorityColor(todo.priority)}`}>
+              {getPriorityText(todo.priority)}
+              <svg className="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => onPriorityChange(todo.id, 'urgent')}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('urgent')}`}>
+                🚨 URGENT
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onPriorityChange(todo.id, 'high')}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('high')}`}>
+                High
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onPriorityChange(todo.id, 'medium')}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('medium')}`}>
+                Medium
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onPriorityChange(todo.id, 'low')}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('low')}`}>
+                Low
+              </span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </TableCell>
       <TableCell className="px-6 py-4">
         <div className="text-sm text-gray-900">

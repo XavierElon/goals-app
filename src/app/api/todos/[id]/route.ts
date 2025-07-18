@@ -22,6 +22,17 @@ export async function PUT(
       return NextResponse.json(todo)
     }
 
+    // If we're only updating priority, don't require title
+    if (Object.keys(body).length === 1 && body.hasOwnProperty('priority')) {
+      const todo = await prisma.todo.update({
+        where: { id: todoId },
+        data: {
+          priority: priority
+        }
+      })
+      return NextResponse.json(todo)
+    }
+
     // For full updates, require title
     if (!title) {
       return NextResponse.json(

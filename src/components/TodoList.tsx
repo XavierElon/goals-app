@@ -25,7 +25,6 @@ import {
   TableBody,
   TableHead,
   TableRow,
-  TableCell,
 } from '@/components/ui/table'
 
 interface TodoListProps {
@@ -34,6 +33,7 @@ interface TodoListProps {
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
   onReorder: (todos: Todo[]) => void
+  onPriorityChange: (id: string, priority: string) => void
 }
 
 export function TodoList({
@@ -41,7 +41,8 @@ export function TodoList({
   onToggleCompletion,
   onEdit,
   onDelete,
-  onReorder
+  onReorder,
+  onPriorityChange
 }: TodoListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -96,6 +97,7 @@ export function TodoList({
                 onToggleCompletion={onToggleCompletion}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onPriorityChange={onPriorityChange}
                 getPriorityColor={getPriorityColor}
                 getPriorityText={getPriorityText}
                 formatDueDate={formatDueDate}

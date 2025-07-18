@@ -34,35 +34,24 @@ const buttonVariants = cva(
   }
 );
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
-  className?: string;
-  children: React.ReactNode;
-  isSubmitting?: boolean;
+interface StatefulButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+  isSubmitting?: boolean
+  children: React.ReactNode
 }
 
-const Button = ({ className, variant, size, children, isSubmitting, ...props }: ButtonProps) => {
+const Button = ({ className, variant, size, children, isSubmitting, onClick, ...props }: StatefulButtonProps) => {
   const handleClick = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (props.onClick) {
-      await props.onClick(event);
+    if (onClick) {
+      await onClick(event)
     }
-  };
-
-  const {
-    onClick,
-    onDrag,
-    onDragStart,
-    onDragEnd,
-    onAnimationStart,
-    onAnimationEnd,
-    ...buttonProps
-  } = props;
+  }
 
   return (
     <button
       className={cn(
         buttonVariants({ variant, size, className }),
       )}
-      {...buttonProps}
+      {...props}
       onClick={handleClick}
       disabled={isSubmitting}
     >

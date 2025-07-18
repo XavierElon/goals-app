@@ -1,5 +1,7 @@
 export const getPriorityColor = (priority: string) => {
   switch (priority) {
+    case 'urgent':
+      return 'bg-red-600 text-white animate-pulse'
     case 'high':
       return 'bg-red-100 text-red-800'
     case 'medium':
@@ -12,29 +14,40 @@ export const getPriorityColor = (priority: string) => {
 }
 
 export const getPriorityText = (priority: string) => {
-  return priority.charAt(0).toUpperCase() + priority.slice(1)
+  switch (priority) {
+    case 'urgent':
+      return '🚨 URGENT'
+    case 'high':
+      return 'High'
+    case 'medium':
+      return 'Medium'
+    case 'low':
+      return 'Low'
+    default:
+      return priority.charAt(0).toUpperCase() + priority.slice(1)
+  }
 }
 
 export const formatDueDate = (dueDate: string) => {
   if (!dueDate) return null
   const date = new Date(dueDate)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const month = months[date.getMonth()]
+  const day = date.getDate()
+  const year = date.getFullYear()
+  return `${month} ${day}, ${year}`
 }
 
 export const formatCompletionDate = (completedAt: string) => {
   if (!completedAt) return null
   const date = new Date(completedAt)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const month = months[date.getMonth()]
+  const day = date.getDate()
+  const year = date.getFullYear()
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+  return `${month} ${day}, ${year} at ${hours}:${minutes}`
 }
 
 export const isOverdue = (dueDate: string, isCompleted: boolean) => {

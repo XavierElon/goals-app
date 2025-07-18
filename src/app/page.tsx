@@ -238,7 +238,29 @@ export default function Home() {
     }
   }
 
-  const toggleCompletion = async (goalId: string, date: string) => {
+  const updateTodoPriority = async (todoId: string, priority: string) => {
+    try {
+      const response = await fetch(`/api/todos/${todoId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ priority }),
+      })
+
+      if (response.ok) {
+        toast.success('Task priority updated!')
+        fetchTodos()
+      } else {
+        toast.error('Failed to update task priority')
+      }
+    } catch (error) {
+      console.error('Error updating todo priority:', error)
+      toast.error('Failed to update task priority')
+    }
+  }
+
+  const toggleCompletion = async (goalId: string) => {
     const today = new Date().toISOString().split('T')[0]
     const isCompleted = goals
       .find(g => g.id === goalId)
@@ -390,6 +412,7 @@ export default function Home() {
           onToggleCompletion={toggleTodoCompletion}
           onEdit={openTodoEditModal}
           onDelete={setDeletingTodo}
+          onPriorityChange={updateTodoPriority}
           onReorder={(reorderedTodos) => {
             setTodos(reorderedTodos)
             toast.success('Tasks reordered successfully!')

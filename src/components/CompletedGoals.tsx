@@ -2,20 +2,13 @@
 
 import React, { useState } from 'react'
 import { Goal } from './types'
-import { getStreakCount, isCompletedToday, formatCompletionDate } from './utils'
+import { getStreakCount, isCompletedToday, formatCompletionDate, formatDueDate } from './utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Table,
   TableHeader,
@@ -259,11 +252,7 @@ function CompletedGoalRow({
         <div className="text-sm text-gray-500">
           {goal.targetDate ? (
             <span className={new Date(goal.targetDate) < new Date(goal.completedAt || '') ? 'text-red-500' : ''}>
-              {new Date(goal.targetDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              })}
+              {formatDueDate(goal.targetDate)}
               {new Date(goal.targetDate) < new Date(goal.completedAt || '') && ' (Was Overdue)'}
             </span>
           ) : (

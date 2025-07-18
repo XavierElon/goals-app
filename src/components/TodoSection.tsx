@@ -13,6 +13,7 @@ interface TodoSectionProps {
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
   onReorder: (todos: Todo[]) => void
+  onPriorityChange: (id: string, priority: string) => void
 }
 
 export function TodoSection({
@@ -21,7 +22,8 @@ export function TodoSection({
   onToggleCompletion,
   onEdit,
   onDelete,
-  onReorder
+  onReorder,
+  onPriorityChange
 }: TodoSectionProps) {
   const activeTodos = todos.filter(todo => !todo.isCompleted)
   const completedTodos = todos.filter(todo => todo.isCompleted)
@@ -51,6 +53,7 @@ export function TodoSection({
               onEdit={onEdit}
               onDelete={onDelete}
               onReorder={onReorder}
+              onPriorityChange={onPriorityChange}
             />
           )}
 

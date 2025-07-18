@@ -4,20 +4,13 @@ import React from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Goal } from './types'
-import { getStreakCount, isCompletedToday } from './utils'
+import { getStreakCount, isCompletedToday, formatDueDate } from './utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { TableRow, TableCell } from '@/components/ui/table'
 
 interface SortableGoalRowProps {
@@ -214,11 +207,7 @@ export function SortableGoalRow({
         <div className="text-sm text-gray-900">
           {goal.targetDate ? (
             <span className={new Date(goal.targetDate) < new Date() && !goal.isCompleted ? 'text-red-600 font-medium' : ''}>
-              {new Date(goal.targetDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              })}
+              {formatDueDate(goal.targetDate)}
               {new Date(goal.targetDate) < new Date() && !goal.isCompleted && ' (Overdue)'}
             </span>
           ) : (

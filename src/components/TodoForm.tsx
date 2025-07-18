@@ -18,12 +18,11 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Calendar } from "@/components/ui/calendar"
 import {
   Popover,
@@ -31,6 +30,32 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
+
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'low':
+      return 'bg-green-100 text-green-800'
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'high':
+      return 'bg-red-100 text-red-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+const getPriorityText = (priority: string) => {
+  switch (priority) {
+    case 'low':
+      return 'Low'
+    case 'medium':
+      return 'Medium'
+    case 'high':
+      return 'High'
+    default:
+      return 'Medium'
+  }
+}
 
 const TodoFormSchema = z.object({
   title: z.string().min(1, {
@@ -108,18 +133,35 @@ export function TodoForm({ onSubmit }: TodoFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Priority</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select priority" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium cursor-pointer hover:bg-gray-50 transition-colors border border-gray-300 bg-white">
+                            {getPriorityText(field.value)}
+                            <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem onClick={() => field.onChange('low')}>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('low')}`}>
+                              Low
+                            </span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => field.onChange('medium')}>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('medium')}`}>
+                              Medium
+                            </span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => field.onChange('high')}>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('high')}`}>
+                              High
+                            </span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

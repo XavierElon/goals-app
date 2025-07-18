@@ -55,17 +55,29 @@ interface EditGoalModalProps {
 }
 
 export function EditGoalModal({ goal, isOpen, onClose, onSubmit, onGoalChange }: EditGoalModalProps) {
-  if (!goal) return null
-
   const form = useForm<EditGoalData>({
     resolver: zodResolver(EditGoalSchema),
     defaultValues: {
-      title: goal.title,
-      description: goal.description || "",
-      goalType: goal.goalType,
-      status: goal.status || "in-progress",
+      title: goal?.title || "",
+      description: goal?.description || "",
+      goalType: goal?.goalType || "daily",
+      status: goal?.status || "in-progress",
     },
   })
+
+  // Reset form when goal changes
+  React.useEffect(() => {
+    if (goal) {
+      form.reset({
+        title: goal.title,
+        description: goal.description || "",
+        goalType: goal.goalType,
+        status: goal.status || "in-progress",
+      })
+    }
+  }, [goal, form])
+
+  if (!goal) return null
 
   function handleSubmit(data: EditGoalData) {
     if (!goal) return
@@ -81,7 +93,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSubmit, onGoalChange }:
       completedAt: goal.completedAt,
     }
     onGoalChange(updatedGoal)
-    onSubmit(new Event('submit') as any)
+    onSubmit(new Event('submit') as unknown as React.FormEvent)
   }
 
   return (
@@ -90,7 +102,7 @@ export function EditGoalModal({ goal, isOpen, onClose, onSubmit, onGoalChange }:
         <DialogHeader>
           <DialogTitle>Edit Goal</DialogTitle>
           <DialogDescription>
-            Make changes to your goal here. Click save when you're done.
+            Make changes to your goal here. Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
