@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Todo } from '../types'
 
 interface EditTodoModalProps {
@@ -8,20 +8,11 @@ interface EditTodoModalProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (e: React.FormEvent) => void
+  onTodoChange: (todo: Todo) => void
 }
 
-export function EditTodoModal({ todo, isOpen, onClose, onSubmit }: EditTodoModalProps) {
-  const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
-
-  useEffect(() => {
-    if (todo) {
-      setEditingTodo({ ...todo })
-    }
-  }, [todo])
-
-  if (!isOpen || !editingTodo) {
-    return null
-  }
+export function EditTodoModal({ todo, isOpen, onClose, onSubmit, onTodoChange }: EditTodoModalProps) {
+  if (!isOpen || !todo) return null
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -35,8 +26,8 @@ export function EditTodoModal({ todo, isOpen, onClose, onSubmit }: EditTodoModal
             <input
               type="text"
               id="edit-todo-title"
-              value={editingTodo.title}
-              onChange={(e) => setEditingTodo({ ...editingTodo, title: e.target.value })}
+              value={todo.title}
+              onChange={(e) => onTodoChange({ ...todo, title: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
@@ -47,8 +38,8 @@ export function EditTodoModal({ todo, isOpen, onClose, onSubmit }: EditTodoModal
             </label>
             <textarea
               id="edit-todo-description"
-              value={editingTodo.description || ''}
-              onChange={(e) => setEditingTodo({ ...editingTodo, description: e.target.value })}
+              value={todo.description || ''}
+              onChange={(e) => onTodoChange({ ...todo, description: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={3}
             />
@@ -60,8 +51,8 @@ export function EditTodoModal({ todo, isOpen, onClose, onSubmit }: EditTodoModal
               </label>
               <select
                 id="edit-todo-priority"
-                value={editingTodo.priority}
-                onChange={(e) => setEditingTodo({ ...editingTodo, priority: e.target.value })}
+                value={todo.priority}
+                onChange={(e) => onTodoChange({ ...todo, priority: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="low">Low</option>
@@ -76,8 +67,8 @@ export function EditTodoModal({ todo, isOpen, onClose, onSubmit }: EditTodoModal
               <input
                 type="date"
                 id="edit-todo-dueDate"
-                value={editingTodo.dueDate || ''}
-                onChange={(e) => setEditingTodo({ ...editingTodo, dueDate: e.target.value })}
+                value={todo.dueDate || ''}
+                onChange={(e) => onTodoChange({ ...todo, dueDate: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

@@ -4,6 +4,7 @@ export interface Goal {
   description?: string
   goalType: string
   isCompleted: boolean
+  status: string
   createdAt: string
   completions: Array<{
     id: string

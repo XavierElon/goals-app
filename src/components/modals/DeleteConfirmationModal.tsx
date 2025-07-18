@@ -4,28 +4,21 @@ import React from 'react'
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean
-  title: string
-  message: string
+  itemType: 'goal' | 'todo'
   onConfirm: () => void
   onCancel: () => void
 }
 
-export function DeleteConfirmationModal({
-  isOpen,
-  title,
-  message,
-  onConfirm,
-  onCancel
-}: DeleteConfirmationModalProps) {
-  if (!isOpen) {
-    return null
-  }
+export function DeleteConfirmationModal({ isOpen, itemType, onConfirm, onCancel }: DeleteConfirmationModalProps) {
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <h3 className="text-lg font-semibold mb-4">{title}</h3>
-        <p className="text-gray-600 mb-6">{message}</p>
+        <h3 className="text-lg font-semibold mb-4">Delete {itemType === 'goal' ? 'Goal' : 'Task'}</h3>
+        <p className="text-gray-600 mb-6">
+          Are you sure you want to delete this {itemType}? This action cannot be undone.
+        </p>
         <div className="flex space-x-3">
           <button
             onClick={onConfirm}

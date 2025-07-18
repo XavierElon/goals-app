@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Goal } from '../types'
 
 interface EditGoalModalProps {
@@ -8,20 +8,11 @@ interface EditGoalModalProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (e: React.FormEvent) => void
+  onGoalChange: (goal: Goal) => void
 }
 
-export function EditGoalModal({ goal, isOpen, onClose, onSubmit }: EditGoalModalProps) {
-  const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
-
-  useEffect(() => {
-    if (goal) {
-      setEditingGoal({ ...goal })
-    }
-  }, [goal])
-
-  if (!isOpen || !editingGoal) {
-    return null
-  }
+export function EditGoalModal({ goal, isOpen, onClose, onSubmit, onGoalChange }: EditGoalModalProps) {
+  if (!isOpen || !goal) return null
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -35,8 +26,8 @@ export function EditGoalModal({ goal, isOpen, onClose, onSubmit }: EditGoalModal
             <input
               type="text"
               id="edit-title"
-              value={editingGoal.title}
-              onChange={(e) => setEditingGoal({ ...editingGoal, title: e.target.value })}
+              value={goal.title}
+              onChange={(e) => onGoalChange({ ...goal, title: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
@@ -47,8 +38,8 @@ export function EditGoalModal({ goal, isOpen, onClose, onSubmit }: EditGoalModal
             </label>
             <textarea
               id="edit-description"
-              value={editingGoal.description || ''}
-              onChange={(e) => setEditingGoal({ ...editingGoal, description: e.target.value })}
+              value={goal.description || ''}
+              onChange={(e) => onGoalChange({ ...goal, description: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={3}
             />
@@ -59,14 +50,33 @@ export function EditGoalModal({ goal, isOpen, onClose, onSubmit }: EditGoalModal
             </label>
             <select
               id="edit-goalType"
-              value={editingGoal.goalType}
-              onChange={(e) => setEditingGoal({ ...editingGoal, goalType: e.target.value })}
+              value={goal.goalType}
+              onChange={(e) => onGoalChange({ ...goal, goalType: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="daily">Daily Goal (track daily progress)</option>
               <option value="one-time">One-time Goal (achieve once)</option>
             </select>
           </div>
+          {goal.goalType === 'one-time' && (
+            <div>
+              <label htmlFor="edit-status" className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
+              <select
+                id="edit-status"
+                value={goal.status || 'in-progress'}
+                onChange={(e) => onGoalChange({ ...goal, status: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="not-started">Not Started</option>
+                <option value="in-progress">In Progress</option>
+                <option value="on-hold">On Hold</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          )}
           <div className="flex space-x-3">
             <button
               type="submit"
