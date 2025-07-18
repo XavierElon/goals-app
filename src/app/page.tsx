@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { toast } from 'sonner'
 
 // Import components
 import { GoalForm } from '@/components/GoalForm'
@@ -35,8 +36,6 @@ export default function Home() {
     fetchTodos()
   }, [])
 
-
-
   // API Functions
   const fetchGoals = async () => {
     try {
@@ -45,6 +44,7 @@ export default function Home() {
       setGoals(data)
     } catch (error) {
       console.error('Error fetching goals:', error)
+      toast.error('Failed to load goals')
     } finally {
       setLoading(false)
     }
@@ -60,6 +60,7 @@ export default function Home() {
       setTodos(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching todos:', error)
+      toast.error('Failed to load todos')
       setTodos([])
     }
   }
@@ -80,10 +81,14 @@ export default function Home() {
       })
 
       if (response.ok) {
+        toast.success(`${goalData.goalType === 'daily' ? 'Daily goal' : 'One-time goal'} created successfully!`)
         fetchGoals()
+      } else {
+        toast.error('Failed to create goal')
       }
     } catch (error) {
       console.error('Error adding goal:', error)
+      toast.error('Failed to create goal')
     }
   }
 
@@ -98,10 +103,14 @@ export default function Home() {
       })
 
       if (response.ok) {
+        toast.success('Task created successfully!')
         fetchTodos()
+      } else {
+        toast.error('Failed to create task')
       }
     } catch (error) {
       console.error('Error adding todo:', error)
+      toast.error('Failed to create task')
     }
   }
 
@@ -124,12 +133,16 @@ export default function Home() {
       })
 
       if (response.ok) {
+        toast.success('Goal updated successfully!')
         setShowEditModal(false)
         setEditingGoal(null)
         fetchGoals()
+      } else {
+        toast.error('Failed to update goal')
       }
     } catch (error) {
       console.error('Error updating goal:', error)
+      toast.error('Failed to update goal')
     }
   }
 
@@ -152,12 +165,16 @@ export default function Home() {
       })
 
       if (response.ok) {
+        toast.success('Task updated successfully!')
         setShowTodoEditModal(false)
         setEditingTodo(null)
         fetchTodos()
+      } else {
+        toast.error('Failed to update task')
       }
     } catch (error) {
       console.error('Error updating todo:', error)
+      toast.error('Failed to update task')
     }
   }
 
@@ -168,11 +185,15 @@ export default function Home() {
       })
 
       if (response.ok) {
+        toast.success('Goal deleted successfully!')
         setDeletingGoal(null)
         fetchGoals()
+      } else {
+        toast.error('Failed to delete goal')
       }
     } catch (error) {
       console.error('Error deleting goal:', error)
+      toast.error('Failed to delete goal')
     }
   }
 
@@ -183,11 +204,15 @@ export default function Home() {
       })
 
       if (response.ok) {
+        toast.success('Task deleted successfully!')
         setDeletingTodo(null)
         fetchTodos()
+      } else {
+        toast.error('Failed to delete task')
       }
     } catch (error) {
       console.error('Error deleting todo:', error)
+      toast.error('Failed to delete task')
     }
   }
 
@@ -202,10 +227,14 @@ export default function Home() {
       })
 
       if (response.ok) {
+        toast.success(isCompleted ? 'Task reopened!' : 'Task completed!')
         fetchTodos()
+      } else {
+        toast.error('Failed to update task status')
       }
     } catch (error) {
       console.error('Error toggling todo completion:', error)
+      toast.error('Failed to update task status')
     }
   }
 
@@ -224,6 +253,7 @@ export default function Home() {
           },
           body: JSON.stringify({ date: today }),
         })
+        toast.success('Daily goal marked as incomplete')
       } else {
         await fetch(`/api/goals/${goalId}/completions`, {
           method: 'POST',
@@ -232,10 +262,12 @@ export default function Home() {
           },
           body: JSON.stringify({ date: today }),
         })
+        toast.success('Daily goal completed!')
       }
       fetchGoals()
     } catch (error) {
       console.error('Error toggling completion:', error)
+      toast.error('Failed to update goal status')
     }
   }
 
@@ -247,9 +279,11 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
       })
+      toast.success('One-time goal status updated!')
       fetchGoals()
     } catch (error) {
       console.error('Error toggling one-time goal:', error)
+      toast.error('Failed to update goal status')
     }
   }
 
@@ -267,9 +301,11 @@ export default function Home() {
       )
 
       await Promise.all(updatePromises)
+      toast.success('Goals reordered successfully!')
       fetchGoals()
     } catch (error) {
       console.error('Error reordering goals:', error)
+      toast.error('Failed to reorder goals')
     }
   }
 
@@ -337,6 +373,7 @@ export default function Home() {
           onDelete={setDeletingTodo}
           onReorder={(reorderedTodos) => {
             setTodos(reorderedTodos)
+            toast.success('Tasks reordered successfully!')
           }}
         />
 
