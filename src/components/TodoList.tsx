@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -16,6 +16,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
+import { AnimatePresence, motion } from 'motion/react'
 import { SortableTodoItem } from './SortableTodoItem'
 import { Todo } from './types'
 import { getPriorityColor, getPriorityText, formatDueDate, isOverdue } from './utils'
@@ -44,6 +45,8 @@ export function TodoList({
   onReorder,
   onPriorityChange
 }: TodoListProps) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -90,10 +93,13 @@ export function TodoList({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {todos.map((todo) => (
+            {todos.map((todo, index) => (
               <SortableTodoItem
                 key={todo.id}
                 todo={todo}
+                index={index}
+                isHovered={hoveredIndex === index}
+                onHoverChange={(isHovered) => setHoveredIndex(isHovered ? index : null)}
                 onToggleCompletion={onToggleCompletion}
                 onEdit={onEdit}
                 onDelete={onDelete}

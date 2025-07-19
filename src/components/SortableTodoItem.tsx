@@ -3,6 +3,7 @@
 import React from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { cn } from '@/lib/utils'
 import { Todo } from './types'
 import {
   DropdownMenu,
@@ -14,6 +15,9 @@ import { TableRow, TableCell } from '@/components/ui/table'
 
 interface SortableTodoItemProps {
   todo: Todo
+  index: number
+  isHovered: boolean
+  onHoverChange: (isHovered: boolean) => void
   onToggleCompletion: (id: string, isCompleted: boolean) => void
   onEdit: (todo: Todo) => void
   onDelete: (id: string) => void
@@ -26,6 +30,9 @@ interface SortableTodoItemProps {
 
 export function SortableTodoItem({ 
   todo, 
+  index,
+  isHovered,
+  onHoverChange,
   onToggleCompletion, 
   onEdit, 
   onDelete, 
@@ -54,7 +61,12 @@ export function SortableTodoItem({
     <TableRow 
       ref={setNodeRef} 
       style={style} 
-      className="hover:bg-gray-50"
+      className={cn(
+        "transition-colors duration-200",
+        isHovered ? "bg-neutral-200/50 dark:bg-slate-800/50" : "hover:bg-gray-50"
+      )}
+      onMouseEnter={() => onHoverChange(true)}
+      onMouseLeave={() => onHoverChange(false)}
     >
       <TableCell className="px-6 py-4">
         <div className="flex items-center space-x-3">
