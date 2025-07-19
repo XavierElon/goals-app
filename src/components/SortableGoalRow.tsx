@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { TableRow, TableCell } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 
 interface SortableGoalRowProps {
   goal: Goal
@@ -255,16 +256,13 @@ export function SortableGoalRow({
         </DropdownMenu>
       </TableCell>
       <TableCell className="px-6 py-4">
-        <button
+        <Button
           onClick={() => onToggleOneTimeGoal(goal.id)}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            goal.isCompleted
-              ? 'bg-red-600 text-white hover:bg-red-700'
-              : 'bg-green-600 text-white hover:bg-green-700'
-          }`}
+          variant="gradient"
+          className="h-6 px-1.5 text-xs"
         >
           {goal.isCompleted ? 'Mark Incomplete' : 'Mark Complete'}
-        </button>
+        </Button>
       </TableCell>
       <TableCell className="px-6 py-4">
         <DropdownMenu>

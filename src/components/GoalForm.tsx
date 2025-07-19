@@ -198,9 +198,11 @@ export function GoalForm({ onSubmit }: GoalFormProps) {
             )}
           </div>
           
-          <Button type="submit" className="w-full" isSubmitting={isSubmitting}>
-            Add Goal
-          </Button>
+          <div className="flex justify-center">
+            <Button type="submit" variant="gradient" isSubmitting={isSubmitting}>
+              Add Goal
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

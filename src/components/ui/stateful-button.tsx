@@ -2,6 +2,7 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { BackgroundGradient } from "./background-gradient";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
@@ -19,6 +20,7 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        gradient: "bg-transparent text-white shadow-xs",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
@@ -44,6 +46,27 @@ const Button = ({ className, variant, size, children, isSubmitting, onClick, ...
     if (onClick) {
       await onClick(event)
     }
+  }
+
+  // If variant is gradient, wrap with BackgroundGradient
+  if (variant === "gradient") {
+    return (
+      <BackgroundGradient>
+        <button
+          className={cn(
+            buttonVariants({ variant, size, className }),
+          )}
+          {...props}
+          onClick={handleClick}
+          disabled={isSubmitting}
+        >
+          <div className="flex items-center gap-2">
+            {isSubmitting && <Loader />}
+            {children}
+          </div>
+        </button>
+      </BackgroundGradient>
+    )
   }
 
   return (

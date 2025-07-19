@@ -264,7 +264,7 @@ export function EditTodoModal({ todo, isOpen, onClose, onSubmit, onTodoChange }:
             </div>
             
             <div className="flex space-x-3">
-              <Button type="submit" className="flex-1">
+              <Button type="submit" className="flex-1" variant="gradient">
                 Save Changes
               </Button>
               <Button type="button" variant="outline" onClick={onClose} className="flex-1">

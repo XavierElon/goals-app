@@ -30,32 +30,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-
-const getPriorityColor = (priority: string) => {
-  switch (priority) {
-    case 'low':
-      return 'bg-green-100 text-green-800'
-    case 'medium':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'high':
-      return 'bg-red-100 text-red-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
-  }
-}
-
-const getPriorityText = (priority: string) => {
-  switch (priority) {
-    case 'low':
-      return 'Low'
-    case 'medium':
-      return 'Medium'
-    case 'high':
-      return 'High'
-    default:
-      return 'Medium'
-  }
-}
+import { getPriorityColor, getPriorityText } from "./utils"
 
 const TodoFormSchema = z.object({
   title: z.string().min(1, {
@@ -66,7 +41,7 @@ const TodoFormSchema = z.object({
   description: z.string().max(500, {
     message: "Description must be less than 500 characters.",
   }).optional(),
-  priority: z.enum(["low", "medium", "high"]),
+  priority: z.enum(["urgent", "high", "medium", "low"]),
   dueDate: z.date().optional(),
 })
 
@@ -144,9 +119,14 @@ export function TodoForm({ onSubmit }: TodoFormProps) {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
-                          <DropdownMenuItem onClick={() => field.onChange('low')}>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('low')}`}>
-                              Low
+                          <DropdownMenuItem onClick={() => field.onChange('urgent')}>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('urgent')}`}>
+                              🚨 URGENT
+                            </span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => field.onChange('high')}>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('high')}`}>
+                              High
                             </span>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => field.onChange('medium')}>
@@ -154,9 +134,9 @@ export function TodoForm({ onSubmit }: TodoFormProps) {
                               Medium
                             </span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => field.onChange('high')}>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('high')}`}>
-                              High
+                          <DropdownMenuItem onClick={() => field.onChange('low')}>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mr-2 ${getPriorityColor('low')}`}>
+                              Low
                             </span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -232,9 +212,11 @@ export function TodoForm({ onSubmit }: TodoFormProps) {
             />
           </div>
           
-          <Button type="submit" className="bg-green-600 hover:bg-green-700" isSubmitting={isSubmitting}>
-            Add Task
-          </Button>
+          <div className="flex justify-center">
+            <Button type="submit" variant="gradient" isSubmitting={isSubmitting}>
+              Add Task
+            </Button>
+          </div>
         </form>
       </Form>
     </div>

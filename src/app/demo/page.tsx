@@ -2,6 +2,7 @@
 
 import React from "react";
 import { BackgroundMovingCards } from "@/components/ui/background-moving-cards";
+import GradientButtonDemo from "@/components/gradient-button-demo";
 
 
 export default function DemoPage() {
@@ -127,7 +128,10 @@ export default function DemoPage() {
         </div>
       </div>
       
-
+      {/* Gradient Button Demo */}
+      <div className="mt-12 bg-white/90 backdrop-blur-sm rounded-lg p-8 shadow-lg">
+        <GradientButtonDemo />
+      </div>
     </div>
   );
 } 
