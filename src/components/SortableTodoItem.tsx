@@ -73,18 +73,18 @@ export function SortableTodoItem({
           <div 
             {...attributes} 
             {...listeners}
-            className="flex-shrink-0 cursor-move p-1 hover:bg-gray-100 rounded"
+            className="flex-shrink-0 cursor-move p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
           >
-            <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20">
               <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
             </svg>
           </div>
           <div className="flex-1">
-            <div className="text-sm font-medium text-gray-900">
+            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
               {todo.title}
             </div>
             {todo.description && (
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 {todo.description}
               </div>
             )}
@@ -126,14 +126,14 @@ export function SortableTodoItem({
         </DropdownMenu>
       </TableCell>
       <TableCell className="px-6 py-4">
-        <div className="text-sm text-gray-900">
+        <div className="text-sm text-gray-900 dark:text-gray-100">
           {todo.dueDate ? (
-            <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-600 font-medium' : ''}>
+            <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-600 dark:text-red-400 font-medium' : ''}>
               {formatDueDate(todo.dueDate)}
               {isOverdue(todo.dueDate, todo.isCompleted) && ' (Overdue)'}
             </span>
           ) : (
-            <span className="text-gray-400">No due date</span>
+            <span className="text-gray-400 dark:text-gray-500">No due date</span>
           )}
         </div>
       </TableCell>
@@ -143,19 +143,19 @@ export function SortableTodoItem({
             e.stopPropagation()
             onToggleCompletion(todo.id, todo.isCompleted)
           }}
-          className="w-8 h-8 rounded-full border-2 border-gray-300 hover:border-green-400 flex items-center justify-center transition-colors"
+          className="w-8 h-8 rounded-full border-2 border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500 flex items-center justify-center transition-colors"
         >
         </button>
       </TableCell>
       <TableCell className="px-6 py-4">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-              </svg>
-            </button>
-          </DropdownMenuTrigger>
+                      <DropdownMenuTrigger asChild>
+              <button className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </button>
+            </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => onEdit(todo)}>
               Edit

@@ -5,6 +5,7 @@ import { Todo } from './types'
 import { TodoForm } from './TodoForm'
 import { TodoList } from './TodoList'
 import { CompletedTodos } from './CompletedTodos'
+import { GlowingEffect } from '@/components/ui/glowing-effect'
 
 interface TodoSectionProps {
   todos: Todo[]
@@ -29,18 +30,29 @@ export function TodoSection({
   const completedTodos = todos.filter(todo => todo.isCompleted)
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-xl font-semibold">To-Do List</h2>
-        <p className="text-sm text-gray-500 mt-1">Manage your tasks and daily activities. Drag tasks to reorder them by priority.</p>
-      </div>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8">
+      <div className="relative rounded-xl border p-2">
+        <GlowingEffect
+          spread={80}
+          glow={true}
+          disabled={false}
+          proximity={128}
+          inactiveZone={0.01}
+          borderWidth={4}
+          blur={2}
+        />
+        <div className="relative rounded-lg border-0.75 p-4">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-semibold dark:text-white">To-Do List</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your tasks and daily activities. Drag tasks to reorder them by priority.</p>
+          </div>
       
       {/* Add Todo Form */}
       <TodoForm onSubmit={onAddTodo} />
 
       {/* Active Todos List */}
       {activeTodos.length === 0 && completedTodos.length === 0 ? (
-        <div className="p-6 text-center text-gray-500">
+        <div className="p-6 text-center text-gray-500 dark:text-gray-400">
           No tasks yet. Add your first task above!
         </div>
       ) : (
@@ -65,6 +77,8 @@ export function TodoSection({
           />
         </>
       )}
+        </div>
+      </div>
     </div>
   )
 } 

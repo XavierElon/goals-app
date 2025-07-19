@@ -91,8 +91,8 @@ export function GoalForm({ onSubmit }: GoalFormProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-4">Add New Goal</h2>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+      <h2 className="text-xl font-semibold mb-4 dark:text-white">Add New Goal</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <FormField

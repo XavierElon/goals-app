@@ -36,21 +36,21 @@ export function CompletedTodos({
   }
 
   return (
-    <div className="border-t border-gray-200">
+    <div className="border-t border-gray-200 dark:border-gray-700">
       <button
         onClick={() => setShowCompletedTodos(!showCompletedTodos)}
-        className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+        className="w-full px-6 py-4 text-left bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-between"
       >
         <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Completed Tasks ({completedTodos.length})
           </span>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
             Click to {showCompletedTodos ? 'hide' : 'show'}
           </span>
         </div>
         <svg
-          className={`w-5 h-5 text-gray-500 transition-transform ${
+          className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${
             showCompletedTodos ? 'rotate-180' : ''
           }`}
           fill="none"
@@ -100,14 +100,14 @@ function CompletedTodoRow({
   onDelete
 }: CompletedTodoRowProps) {
   return (
-    <TableRow className="bg-gray-50 hover:bg-gray-100">
+    <TableRow className="bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
       <TableCell className="px-6 py-4">
         <div>
-          <div className="text-sm font-medium text-gray-500 line-through">
+          <div className="text-sm font-medium text-gray-500 dark:text-gray-400 line-through">
             {todo.title}
           </div>
           {todo.description && (
-            <div className="text-sm text-gray-400 line-through">
+            <div className="text-sm text-gray-400 dark:text-gray-500 line-through">
               {todo.description}
             </div>
           )}
@@ -119,14 +119,14 @@ function CompletedTodoRow({
         </span>
       </TableCell>
       <TableCell className="px-6 py-4">
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500 dark:text-gray-400">
           {todo.dueDate ? (
             <span className={isOverdue(todo.dueDate, todo.isCompleted) ? 'text-red-500' : ''}>
               {formatDueDate(todo.dueDate)}
               {isOverdue(todo.dueDate, todo.isCompleted) && ' (Was Overdue)'}
             </span>
           ) : (
-            <span className="text-gray-400">No due date</span>
+            <span className="text-gray-400 dark:text-gray-500">No due date</span>
           )}
         </div>
       </TableCell>
@@ -137,7 +137,7 @@ function CompletedTodoRow({
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </div>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-300">
             {todo.completedAt ? formatCompletionDate(todo.completedAt) : 'Unknown'}
           </div>
         </div>
@@ -145,7 +145,7 @@ function CompletedTodoRow({
       <TableCell className="px-6">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
+            <button className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
               </svg>

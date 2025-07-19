@@ -12,6 +12,7 @@ import { EditTodoModal } from '@/components/modals/EditTodoModal'
 import { DeleteConfirmationModal } from '@/components/modals/DeleteConfirmationModal'
 import { BackgroundMovingCards } from '@/components/ui/background-moving-cards'
 import { FloatingDock } from '@/components/ui/floating-dock'
+import { ModeToggle } from '@/components/mode-toggle'
 import {
   IconBrandGithub,
   IconHome,
@@ -494,7 +495,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 relative">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 relative">
       {/* Background moving cards */}
       <BackgroundMovingCards
         items={fightClubQuotes}
@@ -505,9 +506,12 @@ export default function Home() {
       
       {/* Main content */}
       <div className="relative z-10 max-w-6xl mx-auto p-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-          Goals & Tasks Tracker
-        </h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Goals & Tasks Tracker
+          </h1>
+          <ModeToggle />
+        </div>
 
         {/* Add Goal Form */}
         <GoalForm onSubmit={addGoal} />

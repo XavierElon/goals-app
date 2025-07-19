@@ -21,17 +21,17 @@ import {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'not-started':
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
     case 'in-progress':
-      return 'bg-blue-100 text-blue-800'
+      return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
     case 'completed':
-      return 'bg-green-100 text-green-800'
+      return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
     case 'on-hold':
-      return 'bg-yellow-100 text-yellow-800'
+      return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
     case 'cancelled':
-      return 'bg-red-100 text-red-800'
+      return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
   }
 }
 
@@ -76,21 +76,21 @@ export function CompletedGoals({
   }
 
   return (
-    <div className="border-t border-gray-200">
+    <div className="border-t border-gray-200 dark:border-gray-700">
       <button
         onClick={() => setShowCompletedGoals(!showCompletedGoals)}
-        className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+        className="w-full px-6 py-4 text-left bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center justify-between"
       >
         <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Completed {goalType === 'daily' ? 'Daily Goals' : 'One-time Goals'} ({completedGoals.length})
           </span>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
             Click to {showCompletedGoals ? 'hide' : 'show'}
           </span>
         </div>
         <svg
-          className={`w-5 h-5 text-gray-500 transition-transform ${
+          className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${
             showCompletedGoals ? 'rotate-180' : ''
           }`}
           fill="none"
@@ -163,14 +163,14 @@ function CompletedGoalRow({
     const completedToday = isCompletedToday(goal.completions)
 
     return (
-      <TableRow className="bg-gray-50 hover:bg-gray-100">
+      <TableRow className="bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
         <TableCell className="px-6 py-4">
           <div>
-            <div className="text-sm font-medium text-gray-500 line-through">
+            <div className="text-sm font-medium text-gray-500 dark:text-gray-400 line-through">
               {goal.title}
             </div>
             {goal.description && (
-              <div className="text-sm text-gray-400 line-through">
+              <div className="text-sm text-gray-400 dark:text-gray-500 line-through">
                 {goal.description}
               </div>
             )}
@@ -180,14 +180,14 @@ function CompletedGoalRow({
           <div className="flex items-center">
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
               streak > 0 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-gray-100 text-gray-800'
+                ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
             }`}>
               {streak} day{streak !== 1 ? 's' : ''}
             </span>
           </div>
         </TableCell>
-        <TableCell className="px-6 py-4 text-sm text-gray-500">
+        <TableCell className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
           {goal.completions.length}
         </TableCell>
         <TableCell className="px-6 py-4">
@@ -203,7 +203,7 @@ function CompletedGoalRow({
                 </svg>
               )}
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               {completedToday ? 'Today' : 'Previously'}
             </div>
           </div>
@@ -211,7 +211,7 @@ function CompletedGoalRow({
         <TableCell className="px-6 py-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
+              <button className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                 </svg>
@@ -235,28 +235,28 @@ function CompletedGoalRow({
   }
 
   return (
-    <TableRow className="bg-gray-50 hover:bg-gray-100">
+    <TableRow className="bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
       <TableCell className="px-6 py-4">
         <div>
-          <div className="text-sm font-medium text-gray-500 line-through">
+          <div className="text-sm font-medium text-gray-500 dark:text-gray-400 line-through">
             {goal.title}
           </div>
           {goal.description && (
-            <div className="text-sm text-gray-400 line-through">
+            <div className="text-sm text-gray-400 dark:text-gray-500 line-through">
               {goal.description}
             </div>
           )}
         </div>
       </TableCell>
       <TableCell className="px-6 py-4">
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500 dark:text-gray-400">
           {goal.targetDate ? (
             <span className={new Date(goal.targetDate) < new Date(goal.completedAt || '') ? 'text-red-500' : ''}>
               {formatDueDate(goal.targetDate)}
               {new Date(goal.targetDate) < new Date(goal.completedAt || '') && ' (Was Overdue)'}
             </span>
           ) : (
-            <span className="text-gray-400">No target date</span>
+            <span className="text-gray-400 dark:text-gray-500">No target date</span>
           )}
         </div>
       </TableCell>
@@ -306,20 +306,20 @@ function CompletedGoalRow({
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </div>
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-300">
             {goal.completedAt ? formatCompletionDate(goal.completedAt) : 'Unknown'}
           </div>
         </div>
       </TableCell>
       <TableCell className="px-6 py-4">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="text-gray-400 hover:text-gray-600 focus:outline-none">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-              </svg>
-            </button>
-          </DropdownMenuTrigger>
+                      <DropdownMenuTrigger asChild>
+              <button className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </button>
+            </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => onToggleOneTimeGoal(goal.id)}>
               Mark Incomplete

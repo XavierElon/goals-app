@@ -81,7 +81,7 @@ export function TodoForm({ onSubmit }: TodoFormProps) {
   }
 
   return (
-    <div className="p-6 border-b border-gray-200">
+    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -111,7 +111,7 @@ export function TodoForm({ onSubmit }: TodoFormProps) {
                     <FormControl>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <button className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium cursor-pointer hover:bg-gray-50 transition-colors border border-gray-300 bg-white">
+                          <button className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                             {getPriorityText(field.value)}
                             <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -221,4 +221,4 @@ export function TodoForm({ onSubmit }: TodoFormProps) {
       </Form>
     </div>
   )
-} 
+}
