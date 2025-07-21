@@ -5,6 +5,7 @@ import { Goal } from './types'
 import { GoalList } from './GoalList'
 import { CompletedGoals } from './CompletedGoals'
 import { isCompletedToday } from './utils'
+import { GlowingEffect } from '@/components/ui/glowing-effect'
 
 interface GoalSectionProps {
   title: string
@@ -50,12 +51,25 @@ export function GoalSection({
   if (goals.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold dark:text-white">{title}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
-        </div>
-        <div className="p-6 text-center text-gray-500 dark:text-gray-400">
-          No {goalType} goals yet. Add your first {goalType} goal above!
+        <div className="relative rounded-xl border p-2">
+          <GlowingEffect
+            spread={80}
+            glow={true}
+            disabled={false}
+            proximity={128}
+            inactiveZone={0.01}
+            borderWidth={4}
+            blur={2}
+          />
+          <div className="relative rounded-lg border-0.75 p-4">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold dark:text-white">{title}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
+            </div>
+            <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+              No {goalType} goals yet. Add your first {goalType} goal above!
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -63,43 +77,56 @@ export function GoalSection({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8">
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-xl font-semibold dark:text-white">{title}</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description} Drag goals to reorder them by priority.</p>
-      </div>
-      
-      {/* Active Goals List */}
-      {activeGoals.length === 0 && completedGoals.length === 0 ? (
-        <div className="p-6 text-center text-gray-500 dark:text-gray-400">
-          No {goalType} goals yet. Add your first {goalType} goal above!
-        </div>
-      ) : (
-        <>
-          {/* Active Goals */}
-          {activeGoals.length > 0 && (
-            <GoalList
-              goals={activeGoals}
-              goalType={goalType}
-              onToggleCompletion={onToggleCompletion}
-              onToggleOneTimeGoal={onToggleOneTimeGoal}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onReorder={onReorder}
-              onStatusChange={onStatusChange}
-            />
-          )}
+      <div className="relative rounded-xl border p-2">
+        <GlowingEffect
+          spread={80}
+          glow={true}
+          disabled={false}
+          proximity={128}
+          inactiveZone={0.01}
+          borderWidth={4}
+          blur={2}
+        />
+        <div className="relative rounded-lg border-0.75 p-4">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-semibold dark:text-white">{title}</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description} Drag goals to reorder them by priority.</p>
+          </div>
+          
+          {/* Active Goals List */}
+          {activeGoals.length === 0 && completedGoals.length === 0 ? (
+            <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+              No {goalType} goals yet. Add your first {goalType} goal above!
+            </div>
+          ) : (
+            <>
+              {/* Active Goals */}
+              {activeGoals.length > 0 && (
+                <GoalList
+                  goals={activeGoals}
+                  goalType={goalType}
+                  onToggleCompletion={onToggleCompletion}
+                  onToggleOneTimeGoal={onToggleOneTimeGoal}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onReorder={onReorder}
+                  onStatusChange={onStatusChange}
+                />
+              )}
 
-          {/* Completed Goals Section */}
-          <CompletedGoals
-            completedGoals={completedGoals}
-            goalType={goalType}
-            onToggleCompletion={onToggleCompletion}
-            onToggleOneTimeGoal={onToggleOneTimeGoal}
-            onStatusChange={onStatusChange}
-            onDelete={onDelete}
-          />
-        </>
-      )}
+              {/* Completed Goals Section */}
+              <CompletedGoals
+                completedGoals={completedGoals}
+                goalType={goalType}
+                onToggleCompletion={onToggleCompletion}
+                onToggleOneTimeGoal={onToggleOneTimeGoal}
+                onStatusChange={onStatusChange}
+                onDelete={onDelete}
+              />
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 } 

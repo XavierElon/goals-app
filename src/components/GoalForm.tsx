@@ -31,6 +31,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
+import { GlowingEffect } from '@/components/ui/glowing-effect'
 
 const GoalFormSchema = z.object({
   title: z.string().min(1, {
@@ -92,119 +93,132 @@ export function GoalForm({ onSubmit }: GoalFormProps) {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-4 dark:text-white">Add New Goal</h2>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Goal Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your goal..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description (optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="Add a description..." {...field} />
-                </FormControl>
-                <FormDescription>
-                  Provide additional details about your goal.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <div className="flex gap-4">
-            <div className="flex-1">
+      <div className="relative rounded-xl border p-2">
+        <GlowingEffect
+          spread={80}
+          glow={true}
+          disabled={false}
+          proximity={128}
+          inactiveZone={0.01}
+          borderWidth={4}
+          blur={2}
+        />
+        <div className="relative rounded-lg border-0.75 p-4">
+          <h2 className="text-xl font-semibold mb-4 dark:text-white">Add New Goal</h2>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="goalType"
+                name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Goal Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a goal type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="daily">Daily Goal</SelectItem>
-                        <SelectItem value="one-time">One-time Goal</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Goal Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your goal..." {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
-            
-            {selectedGoalType === "one-time" && (
-              <div className="flex-1">
-                <FormField
-                  control={form.control}
-                  name="targetDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Target Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description (optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Add a description..." {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Provide additional details about your goal.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <FormField
+                    control={form.control}
+                    name="goalType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Goal Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a goal type" />
+                            </SelectTrigger>
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date(new Date().setHours(0, 0, 0, 0))
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          <SelectContent>
+                            <SelectItem value="daily">Daily Goal</SelectItem>
+                            <SelectItem value="one-time">One-time Goal</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                {selectedGoalType === "one-time" && (
+                  <div className="flex-1">
+                    <FormField
+                      control={form.control}
+                      name="targetDate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Target Date</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pick a date</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date < new Date(new Date().setHours(0, 0, 0, 0))
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          
-          <div className="flex justify-center">
-            <Button type="submit" variant="gradient" isSubmitting={isSubmitting}>
-              Add Goal
-            </Button>
-          </div>
-        </form>
-      </Form>
+              
+              <div className="flex justify-center">
+                <Button type="submit" variant="gradient" isSubmitting={isSubmitting}>
+                  Add Goal
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
+      </div>
     </div>
   )
 } 
